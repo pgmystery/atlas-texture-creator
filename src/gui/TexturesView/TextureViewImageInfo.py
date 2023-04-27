@@ -40,7 +40,7 @@ class TextureViewImageInfo(QDockWidget):
         self.setVisible(False)
 
     def load_tvi_info(self, tvi: TextureViewImage):
-        pixmap = QPixmap(tvi.img_path)
+        pixmap = QPixmap(tvi.texture.texture_path)
         pixmap = pixmap.scaled(self.pixmap_label_size.width(), self.pixmap_label_size.height(), Qt.KeepAspectRatio)
         self.pixmap_label.setPixmap(pixmap)
         self.edit_box.setText(tvi.text)

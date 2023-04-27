@@ -3,10 +3,13 @@ from typing import Callable
 from PySide6.QtWidgets import QToolBar, QPushButton, QComboBox, QInputDialog, QSpacerItem, QSizePolicy, QWidget, \
     QHBoxLayout
 
+from src.atlas_texture_creator import AtlasManager
+
 
 class TopToolbar(QToolBar):
-    def __init__(self):
+    def __init__(self, atlas_manager: AtlasManager):
         super().__init__()
+        self.atlas_manager = atlas_manager
         new_button = QPushButton("New Atlas")
         new_button.setStatusTip("Create a new atlas-collection")
         new_button.clicked.connect(self.on_new_button_click)
@@ -18,6 +21,7 @@ class TopToolbar(QToolBar):
         new_atlas_collection_name, is_ok = QInputDialog.getText(self, "Create Atlas-Collection", "Enter your new Atlas-Collection name")
         if is_ok:
             print(new_atlas_collection_name)
+            self.atlas_manager.new_atlas_collection(new_atlas_collection_name)
 
 
 class BottomToolbar(QToolBar):

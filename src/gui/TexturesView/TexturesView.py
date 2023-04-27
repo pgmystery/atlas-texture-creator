@@ -6,10 +6,13 @@ from PySide6.QtWidgets import QScrollArea, QGridLayout, QWidget, QHBoxLayout
 
 from .TextureViewImage import TextureViewImage
 from .TextureViewImageInfo import TextureViewImageInfo
+from src.atlas_texture_creator.atlas_texture import AtlasTexture
+from src.atlas_texture_creator import AtlasCollection
 
 
 class TexturesView(QWidget):
-    def __init__(self):
+    def __init__(self, atlas_collection: AtlasCollection):
+        self.atlas_collection = atlas_collection
         self.selected_img = None
         super().__init__()
         self.layout = layout = QHBoxLayout()
@@ -31,40 +34,39 @@ class TexturesView(QWidget):
         self.tvii = TextureViewImageInfo(self.close_texture_info)
         layout.addWidget(self.tvii)
 
-    def load_textures(self, dir: str):
-        self.textures = []
-        image_files = []
-        for _, _, files in os.walk(dir):
-            for file in files:
-                if file.endswith(".png"):
-                    image_files.append(file)
+    # def load_textures(self, dir: str):
+    #     self.textures = []
+    #     image_files = []
+    #     for _, _, files in os.walk(dir):
+    #         for file in files:
+    #             if file.endswith(".png"):
+    #                 image_files.append(file)
+    #
+    #     self.textures.append([])
+    #     grid_size = math.ceil(math.sqrt(len(image_files)))
+    #     column_counter = 0
+    #     row_counter = 0
+    #
+    #     for file in image_files:
+    #         if row_counter == grid_size:
+    #             column_counter += 1
+    #             row_counter = 0
+    #             self.textures.append([])
+    #
+    #         file_path = os.path.join(dir, file)
+    #         tvi = TextureViewImage(
+    #             label=file[:-len(".png")],
+    #             img_path=file_path,
+    #             x=row_counter,
+    #             y=column_counter,
+    #             on_click=self.on_texture_click
+    #         )
+    #         self.texture_view_layout.addWidget(tvi, column_counter, row_counter)
+    #         self.textures[column_counter].append(tvi)
+    #
+    #         row_counter += 1
 
-        self.textures.append([])
-        grid_size = math.ceil(math.sqrt(len(image_files)))
-        column_counter = 0
-        row_counter = 0
-
-        for file in image_files:
-            if row_counter == grid_size:
-                column_counter += 1
-                row_counter = 0
-                self.textures.append([])
-
-            file_path = os.path.join(dir, file)
-            tvi = TextureViewImage(
-                label=file[:-len(".png")],
-                img_path=file_path,
-                x=row_counter,
-                y=column_counter,
-                on_click=self.on_texture_click
-            )
-            self.texture_view_layout.addWidget(tvi, column_counter, row_counter)
-            self.textures[column_counter].append(tvi)
-
-            row_counter += 1
-
-    def on_texture_click(self, x: int, y: int):
-        tvi = self.textures[y][x]
+    def on_texture_click(self, tvi: TextureViewImage):
         if self.selected_img != tvi:
             if self.selected_img:
                 self.selected_img.unselect()
@@ -82,3 +84,15 @@ class TexturesView(QWidget):
         if self.selected_img:
             self.selected_img.unselect()
             self.selected_img = None
+
+    def add_texture(self, file_path: str, label: str):
+        texture = self.atlas_collection.add_texture(file_path, label)
+        x = texture.row
+        y = texture.column
+
+        tvi = TextureViewImage(
+            texture=texture,
+            on_click=self.on_texture_click,
+        )
+
+        self.texture_view_layout.addWidget(tvi, x, y)
