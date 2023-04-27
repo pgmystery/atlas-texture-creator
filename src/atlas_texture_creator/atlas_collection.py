@@ -1,10 +1,14 @@
 import math
 
+from .atlas_texture import AtlasTexture
+
 
 class AtlasCollection:
     def __init__(self):
-        self.row_counter = 0
-        self.column_counter = 0
+        self.texture_id = 1
+        self._add_to_column = 0
+        self.row_coords = AtlasCoord()
+        self.column_coords = AtlasCoord()
         self.collection_length = 0
         self.collection = []
         # 1 = self.collection[0][0] = [[1]]  # new array
@@ -30,52 +34,64 @@ class AtlasCollection:
         # column = 0 = new array
 
     def add_texture(self, texture_path: str, label: str):
-        current_offset_number = math.floor(math.sqrt(self.collection_length))
-        atlas_texture = AtlasTexture(texture_path, label)
+        atlas_length = math.sqrt(self.collection_length + 1)
+        current_offset = math.floor(atlas_length)
+        atlas_texture = AtlasTexture(self.texture_id, texture_path, label)
+        self.texture_id += 1
 
         # 0, 0
-        if current_offset_number == 0:
+        if self.collection_length == 0:
             self.collection.append([atlas_texture])
             self.collection_length += 1
             return
 
-        if self.column_counter == self.row_counter:
-            self.column_counter += 1
-            self.collection[self.row_counter].append(atlas_texture)
+        if atlas_length.is_integer():
+            self.row_coords.next()
+            self.column_coords.next()
+            atlas_length_index = int(atlas_length) - 1
+            self.collection[atlas_length_index].append(atlas_texture)
+            self._reset_add_to_column()
             self.collection_length += 1
-        else:
-            self.row_counter += 1
-            collection_square_len = math.sqrt(self.collection_length)
-            if collection_square_len.is_integer():
-                pass
-            # elif self.column_counter > self.row_counter:
-            else:
-                column_counter = self.column_counter - 1
+            return
 
-    def replace_texture(self):
-        pass
+        if self._add_to_column == 0:
+            # add to column
+            self.collection[self.column_coords.offset].append(atlas_texture)
+            self.column_coords.step()
+        else:
+            if self.row_coords.offset == 0:
+                # add array
+                self.collection.append([atlas_texture])
+            else:
+                self.collection[current_offset].append(atlas_texture)
+            self.row_coords.step()
+        self.collection_length += 1
+        self._coord_flip()
+
+    def get_texture(self, row: int, column: int) -> AtlasTexture:
+        return self.collection[row][column]
 
     def generate_atlas(self):
         pass
 
+    def _coord_flip(self):
+        self._add_to_column = 0 if self._add_to_column == 1 else 1
 
-class AtlasTexture:
-    def __init__(self, texture_path: str, label: str):
-        self.texture_path = texture_path
-        self._label = label
+    def _reset_add_to_column(self):
+        self._add_to_column = 0
 
-    @property
-    def texture(self):
-        return self.texture_path
 
-    @texture.setter
-    def texture(self, path: str):
-        self.texture_path = path
+class AtlasCoord:
+    def __init__(self):
+        self.index = 0
+        self.offset = 0
 
-    @property
-    def label(self):
-        return self._label
+    def reset(self):
+        self.offset = 0
 
-    @label.setter
-    def label(self, text: str):
-        self._label = text
+    def step(self):
+        self.offset += 1
+
+    def next(self):
+        self.index += 1
+        self.reset()
