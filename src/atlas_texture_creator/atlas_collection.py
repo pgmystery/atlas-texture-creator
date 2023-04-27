@@ -4,7 +4,8 @@ from .atlas_texture import AtlasTexture
 
 
 class AtlasCollection:
-    def __init__(self):
+    def __init__(self, name: str):
+        self.name = name
         self.texture_id = 1
         self._add_to_column = 0
         self.row_coords = AtlasCoord()
@@ -33,7 +34,7 @@ class AtlasCollection:
         # arrays = row; numbers in array = column
         # column = 0 = new array
 
-    def add_texture(self, texture_path: str, label: str):
+    def add_texture(self, texture_path: str, label: str) -> AtlasTexture:
         atlas_length = math.sqrt(self.collection_length + 1)
         current_offset = math.floor(atlas_length)
         atlas_texture = AtlasTexture(self.texture_id, texture_path, label)
@@ -41,32 +42,44 @@ class AtlasCollection:
 
         # 0, 0
         if self.collection_length == 0:
+            atlas_texture.set_coord(0, 0)
             self.collection.append([atlas_texture])
             self.collection_length += 1
-            return
+            print(atlas_texture.get_coord())
+            return atlas_texture
 
         if atlas_length.is_integer():
             self.row_coords.next()
             self.column_coords.next()
             atlas_length_index = int(atlas_length) - 1
+            atlas_texture.set_coord(atlas_length_index, len(self.collection[atlas_length_index]))
             self.collection[atlas_length_index].append(atlas_texture)
             self._reset_add_to_column()
             self.collection_length += 1
-            return
+            print(atlas_texture.get_coord())
+            return atlas_texture
 
         if self._add_to_column == 0:
             # add to column
+            atlas_texture.set_coord(self.column_coords.offset, len(self.collection[self.column_coords.offset]))
             self.collection[self.column_coords.offset].append(atlas_texture)
             self.column_coords.step()
         else:
             if self.row_coords.offset == 0:
                 # add array
+                atlas_texture.set_coord(len(self.collection), 0)
                 self.collection.append([atlas_texture])
             else:
+                atlas_texture.set_coord(current_offset, len(self.collection[current_offset]))
                 self.collection[current_offset].append(atlas_texture)
             self.row_coords.step()
         self.collection_length += 1
         self._coord_flip()
+        print(atlas_texture.get_coord())
+        return atlas_texture
+
+    def load_texture(self, texture: AtlasTexture):
+        self.collection[texture.row][texture.column] = texture
 
     def get_texture(self, row: int, column: int) -> AtlasTexture:
         return self.collection[row][column]
