@@ -12,12 +12,15 @@ class AtlasManager:
         # settings = Dynaconf(settings_files=["config.json"], validators=[AtlasManagerConfigType])
         pass
 
-    def atlas_instances(self):
-        pass
-
     def new_atlas_collection(self, collection_name: str):
         atlas_collection = AtlasCollection(collection_name)
         self.store.create_collection(atlas_collection)
+
+    def delete_atlas_collection(self, collection_name: str):
+        self.store.delete_collection(collection_name)
+
+    def list_atlas_collections(self) -> list[AtlasCollection]:
+        return self.store.list_atlas_collections()
 
     def load_atlas_collection(self):
         pass

@@ -18,6 +18,13 @@ class AtlasStore:
             session.add(atlas_collection)
             session.commit()
 
+    def delete_collection(self, collection_name: str):
+        collection_model = self._load_collection_model(collection_name)
+
+        with Session(self.engine) as session:
+            session.delete(collection_model)
+            session.commit()
+
     # TODO!
     def load_collection(self, collection_name: str) -> AtlasCollection:
         collection_model = self._load_collection_model(collection_name)
@@ -81,3 +88,16 @@ class AtlasStore:
             session.add(texture_model)
             session.commit()
             session.refresh(texture_model)
+
+    def list_atlas_collections(self) -> list[AtlasCollection]:
+        atlas_collections: list[AtlasCollection] = []
+
+        with Session(self.engine) as session:
+            statement = select(AtlasCollectionModel)
+            atlas_collection_models = session.exec(statement)
+            for atlas_collection_model in atlas_collection_models:
+                collection_name = atlas_collection_model.name
+                atlas_collection = AtlasCollection(collection_name)
+                atlas_collections.append(atlas_collection)
+
+        return atlas_collections
