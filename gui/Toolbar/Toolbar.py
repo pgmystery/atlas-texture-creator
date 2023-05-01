@@ -3,10 +3,10 @@ from typing import Callable
 from PySide6.QtWidgets import QToolBar, QPushButton, QComboBox, QInputDialog, QSpacerItem, QSizePolicy, QWidget, \
     QHBoxLayout, QFileDialog
 
-from src.atlas_texture_creator import AtlasCollection
+from atlas_texture_creator import AtlasCollection
 
 
-class TopToolbar(QToolBar):
+class AtlasManagerToolbar(QToolBar):
     def __init__(
         self,
         new_atlas_collection_callback: Callable[[str], None],
@@ -54,7 +54,7 @@ class TopToolbar(QToolBar):
         self.delete_atlas_collection_callback(collection_name)
 
 
-class BottomToolbar(QToolBar):
+class AtlasCollectionToolbar(QToolBar):
     def __init__(
         self,
         add_texture_callback: Callable[[list[str]], None],

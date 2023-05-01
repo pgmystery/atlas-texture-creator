@@ -3,12 +3,12 @@ import sys
 from pathlib import Path
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication, QFileDialog
+from PySide6.QtWidgets import QApplication
 
-from MainWindow import MainWindow
-from Toolbar import TopToolbar, BottomToolbar
-from TexturesView import TexturesView
-from src.atlas_texture_creator import AtlasManager, AtlasCollection
+from .MainWindow import MainWindow
+from .Toolbar import AtlasManagerToolbar, AtlasCollectionToolbar
+from .TexturesView import TexturesView
+from atlas_texture_creator import AtlasManager, AtlasCollection
 
 
 class Application(QApplication):
@@ -19,11 +19,11 @@ class Application(QApplication):
         blocks_path = os.path.join(resources_path, "block", "textures")
 
         self.atlas_manager = AtlasManager("")
-        self.current_atlas_collection = None
+        self.current_atlas_collection: AtlasCollection | None = None
 
         self.window = window = MainWindow("Atlas Manager")
 
-        self.top_toolbar = top_toolbar = TopToolbar(
+        self.top_toolbar = top_toolbar = AtlasManagerToolbar(
             new_atlas_collection_callback=self.new_atlas_collection,
             delete_atlas_collection_callback=self.delete_atlas_collection,
             on_atlas_collection_changed=self.current_atlas_collection_changed,
@@ -33,7 +33,7 @@ class Application(QApplication):
         self.tv = tv = TexturesView()
         window.add_widget(tv)
 
-        self.bottom_toolbar = bottom_toolbar = BottomToolbar(
+        self.bottom_toolbar = bottom_toolbar = AtlasCollectionToolbar(
             add_texture_callback=self.add_textures,
             generate_atlas_callback=self.generate_atlas,
             open_path=blocks_path,
@@ -49,9 +49,13 @@ class Application(QApplication):
 
     def current_atlas_collection_changed(self, new_collection_name: str):
         print(new_collection_name)
+        if new_collection_name == "":
+            self.current_atlas_collection = None
+        else:
+            self.current_atlas_collection = self.atlas_manager.load_collection(new_collection_name)
 
     def load_atlas_collections(self):
-        collections = self.atlas_manager.list_atlas_collections()
+        collections = self.atlas_manager.list_collections()
         self.top_toolbar.load_atlas_collections(collections)
         if len(collections) == 0:
             self.bottom_toolbar.disable()
@@ -59,22 +63,27 @@ class Application(QApplication):
             self.bottom_toolbar.enable()
 
     def new_atlas_collection(self, collection_name: str):
-        self.atlas_manager.new_atlas_collection(collection_name)
+        self.atlas_manager.create_collection(collection_name)
         self.load_atlas_collections()
 
     def delete_atlas_collection(self, collection_name: str):
-        self.atlas_manager.delete_atlas_collection(collection_name)
+        self.atlas_manager.delete_collection(collection_name)
         self.load_atlas_collections()
 
     def add_textures(self, texture_paths: list[str]):
         for file_path in texture_paths:
             print(file_path)
             f = Path(file_path)
-            self.tv.add_texture(file_path, f.stem)
+            atlas_texture = self.current_atlas_collection.add_texture(file_path, f.stem)
+            self.tv.add_texture(atlas_texture)
 
     def generate_atlas(self):
         print("GENERATE_ATLAS")
 
 
-if __name__ == '__main__':
+def start():
     Application()
+
+
+if __name__ == '__main__':
+    start()

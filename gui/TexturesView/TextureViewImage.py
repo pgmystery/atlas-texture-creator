@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QFrame
 
-from src.atlas_texture_creator.atlas_texture import AtlasTexture
+from atlas_texture_creator.atlas_texture import AtlasTexture
 
 
 class TextureViewImage(QFrame):

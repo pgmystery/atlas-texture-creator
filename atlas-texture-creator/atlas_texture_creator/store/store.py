@@ -13,10 +13,18 @@ class AtlasStore:
         SQLModel.metadata.create_all(engine)
 
     def create_collection(self, atlas_collection: AtlasCollection):
-        atlas_collection = AtlasCollectionModel(name=atlas_collection.name)
+        atlas_collection_model = AtlasCollectionModel(name=atlas_collection.name)
         with Session(self.engine) as session:
-            session.add(atlas_collection)
+            session.add(atlas_collection_model)
             session.commit()
+
+    def update_collection(self, collection_name: str, new_collection: AtlasCollection):
+        collection_model = self._load_collection_model(collection_name)
+        with Session(self.engine) as session:
+            collection_model.name = new_collection.name
+            session.add(collection_model)
+            session.commit()
+            session.refresh(collection_model)
 
     def delete_collection(self, collection_name: str):
         collection_model = self._load_collection_model(collection_name)
@@ -25,10 +33,28 @@ class AtlasStore:
             session.delete(collection_model)
             session.commit()
 
-    # TODO!
+    def list_collections(self) -> list[AtlasCollection]:
+        atlas_collections: list[AtlasCollection] = []
+
+        with Session(self.engine) as session:
+            statement = select(AtlasCollectionModel)
+            atlas_collection_models = session.exec(statement)
+            for atlas_collection_model in atlas_collection_models:
+                collection_name = atlas_collection_model.name
+                atlas_collection = AtlasCollection(collection_name)
+                atlas_collections.append(atlas_collection)
+
+        return atlas_collections
+
     def load_collection(self, collection_name: str) -> AtlasCollection:
         collection_model = self._load_collection_model(collection_name)
-        atlas_collection = AtlasCollection()
+
+        collection_name = collection_model.name
+        atlas_collection = AtlasCollection(collection_name)
+
+        textures = self.load_textures(collection_name)
+        atlas_collection.load_textures(textures)
+
         return atlas_collection
 
 
@@ -88,16 +114,3 @@ class AtlasStore:
             session.add(texture_model)
             session.commit()
             session.refresh(texture_model)
-
-    def list_atlas_collections(self) -> list[AtlasCollection]:
-        atlas_collections: list[AtlasCollection] = []
-
-        with Session(self.engine) as session:
-            statement = select(AtlasCollectionModel)
-            atlas_collection_models = session.exec(statement)
-            for atlas_collection_model in atlas_collection_models:
-                collection_name = atlas_collection_model.name
-                atlas_collection = AtlasCollection(collection_name)
-                atlas_collections.append(atlas_collection)
-
-        return atlas_collections

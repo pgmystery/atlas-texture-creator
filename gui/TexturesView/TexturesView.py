@@ -3,12 +3,11 @@ from PySide6.QtWidgets import QScrollArea, QGridLayout, QWidget, QHBoxLayout
 
 from .TextureViewImage import TextureViewImage
 from .TextureViewImageInfo import TextureViewImageInfo
-from src.atlas_texture_creator import AtlasCollection
+from atlas_texture_creator.atlas_texture import AtlasTexture
 
 
 class TexturesView(QWidget):
     def __init__(self):
-        self.atlas_collection = None
         self.selected_img = None
         super().__init__()
         self.layout = layout = QHBoxLayout()
@@ -30,9 +29,6 @@ class TexturesView(QWidget):
         self.tvii = TextureViewImageInfo(self.close_texture_info)
         layout.addWidget(self.tvii)
 
-    def set_atlas_collection(self, atlas_collection: AtlasCollection):
-        self.atlas_collection = atlas_collection
-
     def on_texture_click(self, tvi: TextureViewImage):
         if self.selected_img != tvi:
             if self.selected_img:
@@ -52,8 +48,7 @@ class TexturesView(QWidget):
             self.selected_img.unselect()
             self.selected_img = None
 
-    def add_texture(self, file_path: str, label: str):
-        texture = self.atlas_collection.add_texture(file_path, label)
+    def add_texture(self, texture: AtlasTexture):
         x = texture.row
         y = texture.column
 

@@ -5,6 +5,7 @@ from .atlas_texture import AtlasTexture
 
 class AtlasCollection:
     def __init__(self, name: str):
+        super().__init__()
         self.name = name
         self.texture_id = 1
         self._add_to_column = 0
@@ -35,9 +36,27 @@ class AtlasCollection:
         # column = 0 = new array
 
     def add_texture(self, texture_path: str, label: str) -> AtlasTexture:
+        atlas_texture = AtlasTexture(self.texture_id, texture_path, label)
+        self._add_texture(atlas_texture)
+        return atlas_texture
+
+    def load_texture(self, texture: AtlasTexture):
+        self._add_texture(texture)
+        # self.collection[texture.row][texture.column] = texture
+
+    def load_textures(self, textures: list[AtlasTexture]):
+        for texture in textures:
+            self.load_texture(texture)
+
+    def get_texture(self, row: int, column: int) -> AtlasTexture:
+        return self.collection[row][column]
+
+    def generate_atlas(self):
+        pass
+
+    def _add_texture(self, atlas_texture: AtlasTexture):
         atlas_length = math.sqrt(self.collection_length + 1)
         current_offset = math.floor(atlas_length)
-        atlas_texture = AtlasTexture(self.texture_id, texture_path, label)
         self.texture_id += 1
 
         # 0, 0
@@ -46,7 +65,7 @@ class AtlasCollection:
             self.collection.append([atlas_texture])
             self.collection_length += 1
             print(atlas_texture.get_coord())
-            return atlas_texture
+            return
 
         if atlas_length.is_integer():
             self.row_coords.next()
@@ -57,7 +76,7 @@ class AtlasCollection:
             self._reset_add_to_column()
             self.collection_length += 1
             print(atlas_texture.get_coord())
-            return atlas_texture
+            return
 
         if self._add_to_column == 0:
             # add to column
@@ -76,16 +95,6 @@ class AtlasCollection:
         self.collection_length += 1
         self._coord_flip()
         print(atlas_texture.get_coord())
-        return atlas_texture
-
-    def load_texture(self, texture: AtlasTexture):
-        self.collection[texture.row][texture.column] = texture
-
-    def get_texture(self, row: int, column: int) -> AtlasTexture:
-        return self.collection[row][column]
-
-    def generate_atlas(self):
-        pass
 
     def _coord_flip(self):
         self._add_to_column = 0 if self._add_to_column == 1 else 1
