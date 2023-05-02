@@ -14,7 +14,7 @@ from atlas_texture_creator import AtlasManager, AtlasCollection
 class Application(QApplication):
     def __init__(self):
         super().__init__()
-        parent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..")
+        parent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
         resources_path = os.path.join(parent_path, "resources")
         blocks_path = os.path.join(resources_path, "block", "textures")
 
@@ -71,10 +71,12 @@ class Application(QApplication):
         self.load_atlas_collections()
 
     def add_textures(self, texture_paths: list[str]):
+        current_atlas_collection_name = self.current_atlas_collection.name
         for file_path in texture_paths:
             print(file_path)
             f = Path(file_path)
             atlas_texture = self.current_atlas_collection.add_texture(file_path, f.stem)
+            self.atlas_manager.add_texture(current_atlas_collection_name, atlas_texture)
             self.tv.add_texture(atlas_texture)
 
     def generate_atlas(self):
