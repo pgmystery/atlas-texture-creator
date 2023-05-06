@@ -32,11 +32,14 @@ class AtlasManagerToolbar(QToolBar):
     def on_new_button_click(self, _):
         new_atlas_collection_name, is_ok = QInputDialog.getText(self, "Create Atlas-Collection", "Enter your new Atlas-Collection name")
         if is_ok:
-            print(new_atlas_collection_name)
             self.new_atlas_collection_callback(new_atlas_collection_name)
 
     def current_atlas_collection_changed(self, new_atlas_collection_name):
         self.on_atlas_collection_changed(new_atlas_collection_name)
+
+    def set_current_atlas_collection(self, collection_name: str):
+        index = self.load_combo_box.findText(collection_name)
+        self.load_combo_box.setCurrentIndex(index)
 
     def load_atlas_collections(self, collections: list[AtlasCollection]):
         self.load_combo_box.clear()

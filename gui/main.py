@@ -23,23 +23,23 @@ class Application(QApplication):
 
         self.window = window = MainWindow("Atlas Manager")
 
-        self.top_toolbar = top_toolbar = AtlasManagerToolbar(
+        self.atlas_manager_toolbar = atlas_manager_toolbar = AtlasManagerToolbar(
             new_atlas_collection_callback=self.new_atlas_collection,
             delete_atlas_collection_callback=self.delete_atlas_collection,
             on_atlas_collection_changed=self.current_atlas_collection_changed,
         )
-        window.addToolBar(Qt.TopToolBarArea, top_toolbar)
+        window.addToolBar(Qt.TopToolBarArea, atlas_manager_toolbar)
 
         self.tv = tv = TexturesView()
         window.add_widget(tv)
 
-        self.bottom_toolbar = bottom_toolbar = AtlasCollectionToolbar(
+        self.atlas_collection_toolbar = atlas_collection_toolbar = AtlasCollectionToolbar(
             add_texture_callback=self.add_textures,
             generate_atlas_callback=self.generate_atlas,
             open_path=blocks_path,
         )
-        # window.addToolBar(Qt.BottomToolBarArea, bottom_toolbar)
-        window.addToolBar(Qt.TopToolBarArea, bottom_toolbar)
+        # window.addToolBar(Qt.BottomToolBarArea, atlas_collection_toolbar)
+        window.addToolBar(Qt.TopToolBarArea, atlas_collection_toolbar)
 
         self.load_atlas_collections()
 
@@ -57,15 +57,16 @@ class Application(QApplication):
 
     def load_atlas_collections(self):
         collections = self.atlas_manager.list_collections()
-        self.top_toolbar.load_atlas_collections(collections)
+        self.atlas_manager_toolbar.load_atlas_collections(collections)
         if len(collections) == 0:
-            self.bottom_toolbar.disable()
+            self.atlas_collection_toolbar.disable()
         else:
-            self.bottom_toolbar.enable()
+            self.atlas_collection_toolbar.enable()
 
     def new_atlas_collection(self, collection_name: str):
         self.atlas_manager.create_collection(collection_name)
         self.load_atlas_collections()
+        self.atlas_manager_toolbar.set_current_atlas_collection(collection_name)
 
     def delete_atlas_collection(self, collection_name: str):
         confirm_delete_box = QMessageBox
