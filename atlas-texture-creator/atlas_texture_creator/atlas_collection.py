@@ -1,4 +1,5 @@
 import math
+from PIL import Image
 
 from .atlas_texture import AtlasTexture
 
@@ -7,6 +8,7 @@ class AtlasCollection:
     def __init__(self, name: str):
         super().__init__()
         self.name = name
+        self.texture_size = 16
         self.texture_id = 1
         self._add_to_column = 0
         self.row_coords = AtlasCoord()
@@ -77,8 +79,20 @@ class AtlasCollection:
         row = new_texture.row
         self.collection[column][row] = new_texture
 
-    def generate_atlas(self):
-        pass
+    def generate_atlas(self) -> Image:
+        atlas_size = math.ceil(math.sqrt(self.collection_length)) * self.texture_size
+        atlas = Image.new(mode="RGB", size=(atlas_size, atlas_size))
+
+        for texture in self.textures():
+            column = texture.column
+            row = texture.row
+            x = column * self.texture_size
+            y = row * self.texture_size
+
+            img = Image.open(texture.img_path)
+            atlas.paste(img, (x, y))
+
+        return atlas
 
     def _add_texture(self, atlas_texture: AtlasTexture):
         atlas_length = math.sqrt(self.collection_length + 1)
