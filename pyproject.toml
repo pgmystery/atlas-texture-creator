@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "atlas-texture-creator-main"
+name = "atlas-texture-creator-app"
 version = "0.1.0"
 description = ""
 authors = ["pglaw <philipp.glaw@gmx.de>"]
