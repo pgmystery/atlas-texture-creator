@@ -48,12 +48,11 @@ class Application(QApplication):
         sys.exit(self.exec())
 
     def current_atlas_collection_changed(self, new_collection_name: str):
-        print(new_collection_name)
+        self.tv.clear()
         if new_collection_name == "":
             self.current_atlas_collection = None
         else:
             self.current_atlas_collection = self.atlas_manager.load_collection(new_collection_name)
-            self.tv.clear()
             self.tv.load_textures(self.current_atlas_collection)
 
     def load_atlas_collections(self):
