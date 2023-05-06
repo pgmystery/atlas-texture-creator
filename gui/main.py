@@ -21,7 +21,7 @@ class Application(QApplication):
         self.atlas_manager = AtlasManager("")
         self.current_atlas_collection: AtlasCollection | None = None
 
-        self.window = window = MainWindow("Atlas Manager")
+        self.window = window = MainWindow("Atlas Texture Creator")
 
         self.atlas_manager_toolbar = atlas_manager_toolbar = AtlasManagerToolbar(
             new_atlas_collection_callback=self.new_atlas_collection,
