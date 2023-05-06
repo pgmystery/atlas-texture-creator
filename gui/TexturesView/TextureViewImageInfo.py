@@ -80,8 +80,9 @@ class TextureViewImageInfo(QDockWidget):
             self.texture_open_dialog_images_filter,
             self.texture_open_dialog_images_filter
         )[0]
-        self.tmp_texture.img_path = new_img_path
-        self._show_image(new_img_path)
+        if new_img_path:
+            self.tmp_texture.img_path = new_img_path
+            self._show_image(new_img_path)
 
     def _on_texture_name_box_change(self, _):
         self.tmp_texture.label = self.texture_name_box.text()
