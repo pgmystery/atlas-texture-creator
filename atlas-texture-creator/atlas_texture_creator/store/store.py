@@ -30,6 +30,11 @@ class AtlasStore:
         collection_model = self._load_collection_model(collection_name)
 
         with Session(self.engine) as session:
+            textures_statement = select(AtlasTexturesModel).where(AtlasTexturesModel.collection == collection_model.id)
+            texture_models = session.exec(textures_statement)
+            for texture_model in texture_models:
+                session.delete(texture_model)
+
             session.delete(collection_model)
             session.commit()
 

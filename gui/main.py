@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMessageBox
 
 from .MainWindow import MainWindow
 from .Toolbar import AtlasManagerToolbar, AtlasCollectionToolbar
@@ -53,6 +53,8 @@ class Application(QApplication):
             self.current_atlas_collection = None
         else:
             self.current_atlas_collection = self.atlas_manager.load_collection(new_collection_name)
+            self.tv.clear()
+            self.tv.load_textures(self.current_atlas_collection)
 
     def load_atlas_collections(self):
         collections = self.atlas_manager.list_collections()
@@ -67,8 +69,17 @@ class Application(QApplication):
         self.load_atlas_collections()
 
     def delete_atlas_collection(self, collection_name: str):
-        self.atlas_manager.delete_collection(collection_name)
-        self.load_atlas_collections()
+        confirm_delete_box = QMessageBox
+        answer = confirm_delete_box.question(
+            self.window,
+            "Delete Collection?",
+            f"Do you really want to delete the collection '{collection_name}'?"
+            f"\nAll attached textures also getting deleted!",
+            QMessageBox.Yes | QMessageBox.No
+        )
+        if answer == QMessageBox.Yes:
+            self.atlas_manager.delete_collection(collection_name)
+            self.load_atlas_collections()
 
     def add_textures(self, texture_paths: list[str]):
         current_atlas_collection_name = self.current_atlas_collection.name

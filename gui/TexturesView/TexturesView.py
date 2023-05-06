@@ -1,6 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QScrollArea, QGridLayout, QWidget, QHBoxLayout
 
+from atlas_texture_creator import AtlasCollection
 from .TextureViewImage import TextureViewImage
 from .TextureViewImageInfo import TextureViewImageInfo
 from atlas_texture_creator.atlas_texture import AtlasTexture
@@ -58,3 +59,18 @@ class TexturesView(QWidget):
         )
 
         self.texture_view_layout.addWidget(tvi, x, y)
+
+    def load_textures(self, collection: AtlasCollection):
+        for texture in collection.textures():
+            print(f"id: {str(texture.id)}", f"column: {str(texture.column)}", f"row: {str(texture.row)}")
+            self.add_texture(texture)
+
+    def clear(self):
+        self.close_texture_info()
+        while self.texture_view_layout.count():
+            item = self.texture_view_layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+            else:
+                self.texture_view_layout.clearLayout(item.layout())

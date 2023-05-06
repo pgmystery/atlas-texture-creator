@@ -12,7 +12,7 @@ class AtlasCollection:
         self.row_coords = AtlasCoord()
         self.column_coords = AtlasCoord()
         self.collection_length = 0
-        self.collection = []
+        self.collection: list[list[AtlasTexture]] = []
         # 1 = self.collection[0][0] = [[1]]  # new array
         # 2 = self.collection[0][1] = [[1, 2]]
         # 3 = self.collection[1][0] = [[1, 2], [3]]  # new array
@@ -50,6 +50,27 @@ class AtlasCollection:
 
     def get_texture(self, row: int, column: int) -> AtlasTexture:
         return self.collection[row][column]
+
+    # Not very efficient...
+    def textures(self):
+        square_number = math.ceil(math.sqrt(self.collection_length))
+
+        # current_row = 0
+        # current_column = 0
+        # textures_length_sqrt = math.sqrt(self.collection_length)
+        # textures_length_floor_sqrt = math.floor(textures_length_sqrt)
+        # max_row = textures_length_floor_sqrt
+        # max_column = textures_length_floor_sqrt
+        # offset_number = (self.collection_length - (max_row * max_column)) / 2.0
+        # row_offset = math.floor(offset_number)
+        # column_offset = math.floor(offset_number) if offset_number.is_integer() else math.ceil(offset_number)
+
+        for column in range(square_number):
+            for row in range(square_number):
+                try:
+                    yield self.collection[column][row]
+                except IndexError:
+                    continue
 
     def generate_atlas(self):
         pass
