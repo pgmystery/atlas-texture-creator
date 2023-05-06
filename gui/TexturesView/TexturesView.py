@@ -1,3 +1,5 @@
+from typing import Callable
+
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QScrollArea, QGridLayout, QWidget, QHBoxLayout
 
@@ -8,9 +10,10 @@ from atlas_texture_creator.atlas_texture import AtlasTexture
 
 
 class TexturesView(QWidget):
-    def __init__(self):
-        self.selected_img = None
+    def __init__(self, replace_texture_callback: Callable[[AtlasTexture], None]):
         super().__init__()
+        self._replace_texture_callback = replace_texture_callback
+        self.selected_texture = None
         self.layout = layout = QHBoxLayout()
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -27,16 +30,19 @@ class TexturesView(QWidget):
         texture_view.setWidget(frame)
         layout.addWidget(texture_view)
 
-        self.tvii = TextureViewImageInfo(self.close_texture_info)
+        self.tvii = TextureViewImageInfo(self.close_texture_info, self.on_texture_save)
         layout.addWidget(self.tvii)
 
     def on_texture_click(self, tvi: TextureViewImage):
-        if self.selected_img != tvi:
-            if self.selected_img:
-                self.selected_img.unselect()
+        if self.selected_texture != tvi:
+            if self.selected_texture:
+                self.selected_texture.unselect()
             tvi.select()
-            self.selected_img = tvi
+            self.selected_texture = tvi
             self.tvii.load_tvi_info(tvi)
+
+    def on_texture_save(self, new_texture: AtlasTexture):
+        self._replace_texture_callback(new_texture)
 
     def keyPressEvent(self, event):
         super().keyPressEvent(event)
@@ -45,9 +51,9 @@ class TexturesView(QWidget):
 
     def close_texture_info(self):
         self.tvii.hide()
-        if self.selected_img:
-            self.selected_img.unselect()
-            self.selected_img = None
+        if self.selected_texture:
+            self.selected_texture.unselect()
+            self.selected_texture = None
 
     def add_texture(self, texture: AtlasTexture):
         x = texture.row
@@ -61,6 +67,7 @@ class TexturesView(QWidget):
         self.texture_view_layout.addWidget(tvi, x, y)
 
     def load_textures(self, collection: AtlasCollection):
+        self.clear()
         for texture in collection.textures():
             print(f"id: {str(texture.id)}", f"column: {str(texture.column)}", f"row: {str(texture.row)}")
             self.add_texture(texture)

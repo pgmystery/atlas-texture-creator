@@ -72,6 +72,11 @@ class AtlasCollection:
                 except IndexError:
                     continue
 
+    def replace_texture(self, new_texture: AtlasTexture):
+        column = new_texture.column
+        row = new_texture.row
+        self.collection[column][row] = new_texture
+
     def generate_atlas(self):
         pass
 

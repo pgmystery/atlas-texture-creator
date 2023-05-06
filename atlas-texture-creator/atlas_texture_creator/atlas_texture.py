@@ -14,11 +14,11 @@ class AtlasTexture:
         self.row = row
 
     @property
-    def texture(self):
+    def img_path(self):
         return self.texture_path
 
-    @texture.setter
-    def texture(self, path: str):
+    @img_path.setter
+    def img_path(self, path: str):
         self.texture_path = path
 
     @property

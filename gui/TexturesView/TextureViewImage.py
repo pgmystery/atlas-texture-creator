@@ -9,9 +9,9 @@ from atlas_texture_creator.atlas_texture import AtlasTexture
 
 class TextureViewImage(QFrame):
     def __init__(self, texture: AtlasTexture, on_click: Callable[[Any], None]=None):
+        super().__init__()
         self.texture = texture
         self.on_click_callback = on_click
-        super().__init__()
         self.layout = layout = QVBoxLayout(self)
 
         pixmap = QPixmap(texture.texture_path)

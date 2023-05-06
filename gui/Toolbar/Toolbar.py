@@ -102,7 +102,6 @@ class AtlasCollectionToolbar(QToolBar):
         self.add_texture_callback(file_paths)
 
     def generate_atlas(self, _):
-        print("GENERATE_ATLAS")
         self.generate_atlas_callback()
 
     def disable(self):

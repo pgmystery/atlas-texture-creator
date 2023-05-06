@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 from .MainWindow import MainWindow
 from .Toolbar import AtlasManagerToolbar, AtlasCollectionToolbar
 from .TexturesView import TexturesView
-from atlas_texture_creator import AtlasManager, AtlasCollection
+from atlas_texture_creator import AtlasManager, AtlasCollection, AtlasTexture
 
 
 class Application(QApplication):
@@ -30,7 +30,9 @@ class Application(QApplication):
         )
         window.addToolBar(Qt.TopToolBarArea, atlas_manager_toolbar)
 
-        self.tv = tv = TexturesView()
+        self.tv = tv = TexturesView(
+            replace_texture_callback=self.replace_texture
+        )
         window.add_widget(tv)
 
         self.atlas_collection_toolbar = atlas_collection_toolbar = AtlasCollectionToolbar(
@@ -48,9 +50,9 @@ class Application(QApplication):
         sys.exit(self.exec())
 
     def current_atlas_collection_changed(self, new_collection_name: str):
-        self.tv.clear()
         if new_collection_name == "":
             self.current_atlas_collection = None
+            self.tv.clear()
         else:
             self.current_atlas_collection = self.atlas_manager.load_collection(new_collection_name)
             self.tv.load_textures(self.current_atlas_collection)
@@ -89,6 +91,11 @@ class Application(QApplication):
             atlas_texture = self.current_atlas_collection.add_texture(file_path, f.stem)
             self.atlas_manager.add_texture(current_atlas_collection_name, atlas_texture)
             self.tv.add_texture(atlas_texture)
+
+    def replace_texture(self, new_texture: AtlasTexture):
+        self.atlas_manager.update_texture(self.current_atlas_collection.name, new_texture)
+        self.current_atlas_collection.replace_texture(new_texture)
+        self.tv.load_textures(self.current_atlas_collection)
 
     def generate_atlas(self):
         print("GENERATE_ATLAS")
