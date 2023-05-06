@@ -81,7 +81,7 @@ class AtlasCollection:
 
     def generate_atlas(self) -> Image:
         atlas_size = math.ceil(math.sqrt(self.collection_length)) * self.texture_size
-        atlas = Image.new(mode="RGB", size=(atlas_size, atlas_size))
+        atlas = Image.new(mode="RGBA", size=(atlas_size, atlas_size))
 
         for texture in self.textures():
             column = texture.column
