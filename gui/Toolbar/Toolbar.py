@@ -22,12 +22,15 @@ class AtlasManagerToolbar(QToolBar):
         new_button.clicked.connect(self.on_new_button_click)
         self.addWidget(new_button)
         self.load_combo_box = load_combo_box = QComboBox()
+        self.load_combo_box.setFixedWidth(200)
         self.load_combo_box.currentTextChanged.connect(self.current_atlas_collection_changed)
         self.addWidget(load_combo_box)
         # spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.delete_button = QPushButton("Delete Atlas Collection")
         self.delete_button.clicked.connect(self.delete_atlas_collection)
         self.addWidget(self.delete_button)
+        layout = self.layout()
+        layout.setSpacing(10)
 
     def on_new_button_click(self, _):
         new_atlas_collection_name, is_ok = QInputDialog.getText(self, "Create Atlas-Collection", "Enter your new Atlas-Collection name")
