@@ -97,11 +97,9 @@ class Application(QApplication):
         self.current_atlas_collection.replace_texture(new_texture)
         self.tv.load_textures(self.current_atlas_collection)
 
-    # TODO:
     def generate_atlas(self, save_path: str):
         img = self.current_atlas_collection.generate_atlas()
         img.save(save_path)
-        print("DONE!")
 
 
 def start():

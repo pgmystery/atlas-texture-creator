@@ -25,7 +25,7 @@ class TextureViewImageInfo(QDockWidget):
         widget.setLayout(layout)
 
         self.pixmap_label = pixmap_label = QLabel(self, alignment=Qt.AlignCenter)
-        pixmap_label.setFixedHeight(pixmap_label.width())
+        self.pixmap_label.resizeEvent = self.pixmal_label_resize_event
         pixmap_label.setScaledContents(True)
         self.pixmap_label_size = pixmap_label.size()
         layout.addWidget(pixmap_label)
@@ -60,9 +60,21 @@ class TextureViewImageInfo(QDockWidget):
     def closeEvent(self, event: QCloseEvent):
         self._close(event)
 
+    def pixmal_label_resize_event(self, event):
+        size = event.size()
+        width = size.width()
+        height = size.height()
+
+        if width != height:
+            pixmap = self.pixmap_label.pixmap()
+            pixmap = pixmap.scaled(width, width, Qt.KeepAspectRatio)
+            self.pixmap_label.setPixmap(pixmap)
+
     def _show_image(self, image_path: str):
+        widht = self.pixmap_label_size.width()
+        height = self.pixmap_label_size.height()
         pixmap = QPixmap(image_path)
-        pixmap = pixmap.scaled(self.pixmap_label_size.width(), self.pixmap_label_size.height(), Qt.KeepAspectRatio)
+        pixmap = pixmap.scaled(widht, height, Qt.KeepAspectRatio)
         self.pixmap_label.setPixmap(pixmap)
 
     def _on_save_clicked(self, _):
