@@ -97,4 +97,8 @@ class TextureViewImageInfo(QDockWidget):
             self._show_image(new_img_path)
 
     def _on_texture_name_box_change(self, _):
-        self.tmp_texture.label = self.texture_name_box.text()
+        new_text = self.texture_name_box.text()
+        if new_text == "":
+            self.tmp_texture.label = self.tvi.texture.label
+        else:
+            self.tmp_texture.label = new_text
