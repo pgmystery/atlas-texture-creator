@@ -35,12 +35,13 @@ class Application(QApplication):
         )
         window.add_widget(tv)
 
+        window.addToolBarBreak(Qt.TopToolBarArea)
+
         self.atlas_collection_toolbar = atlas_collection_toolbar = AtlasCollectionToolbar(
             add_texture_callback=self.add_textures,
             generate_atlas_callback=self.generate_atlas,
             open_path=blocks_path,
         )
-        # window.addToolBar(Qt.BottomToolBarArea, atlas_collection_toolbar)
         window.addToolBar(Qt.TopToolBarArea, atlas_collection_toolbar)
 
         self.load_atlas_collections()

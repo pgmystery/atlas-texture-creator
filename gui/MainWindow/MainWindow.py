@@ -1,5 +1,5 @@
 from PySide6.QtGui import QScreen
-from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QApplication, QVBoxLayout
+from PySide6.QtWidgets import QMainWindow, QWidget, QApplication, QVBoxLayout
 
 
 class MainWindow(QMainWindow):
