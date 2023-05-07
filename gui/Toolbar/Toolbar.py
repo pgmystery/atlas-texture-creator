@@ -17,7 +17,7 @@ class AtlasManagerToolbar(QToolBar):
         self.new_atlas_collection_callback = new_atlas_collection_callback
         self.delete_atlas_collection_callback = delete_atlas_collection_callback
         self.on_atlas_collection_changed = on_atlas_collection_changed
-        new_button = QPushButton("New Atlas")
+        new_button = QPushButton("New Atlas-Collection")
         new_button.setStatusTip("Create a new atlas-collection")
         new_button.clicked.connect(self.on_new_button_click)
         self.addWidget(new_button)
@@ -25,8 +25,7 @@ class AtlasManagerToolbar(QToolBar):
         self.load_combo_box.setFixedWidth(200)
         self.load_combo_box.currentTextChanged.connect(self.current_atlas_collection_changed)
         self.addWidget(load_combo_box)
-        # spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        self.delete_button = QPushButton("Delete Atlas Collection")
+        self.delete_button = QPushButton("Delete Atlas-Collection")
         self.delete_button.clicked.connect(self.delete_atlas_collection)
         self.addWidget(self.delete_button)
         layout = self.layout()
@@ -65,18 +64,20 @@ class AtlasCollectionToolbar(QToolBar):
         self,
         add_texture_callback: Callable[[list[str]], None],
         generate_atlas_callback: Callable,
+        export_textures_callback: Callable[[str], None],
         open_path: str,
     ):
         super().__init__()
         self.add_texture_callback = add_texture_callback
         self.generate_atlas_callback = generate_atlas_callback
+        self.export_textures_callback = export_textures_callback
         self.texture_open_dialog = QFileDialog(self)
         self.texture_open_dialog_images_filter = "Images (*.png *.jpg)"
         self.texture_open_dialog_open_path = open_path
         self.save_atlas_dialog = QFileDialog(self)
         widget = QWidget(self)
         layout = QHBoxLayout()
-        layout.setSpacing(0)
+        layout.setSpacing(10)
         layout.setContentsMargins(0, 0, 0, 0)
         widget.setLayout(layout)
 
@@ -86,12 +87,18 @@ class AtlasCollectionToolbar(QToolBar):
 
         spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
+        self.export_textures_button = export_textures_button = QPushButton("Export Textures")
+        export_textures_button.setDisabled(True)
+        export_textures_button.clicked.connect(self.export_textures)
+        self.export_textures_dialog = QFileDialog(self)
+
         self.generate_atlas_button = generate_atlas_button = QPushButton("Generate Atlas")
         generate_atlas_button.setDisabled(True)
         generate_atlas_button.clicked.connect(self.generate_atlas)
 
         layout.addWidget(add_button)
         layout.addItem(spacer)
+        layout.addWidget(export_textures_button)
         layout.addWidget(generate_atlas_button)
         self.addWidget(widget)
 
@@ -114,10 +121,23 @@ class AtlasCollectionToolbar(QToolBar):
         if save_dir:
             self.generate_atlas_callback(save_dir)
 
+    def export_textures(self, _):
+        dir_path = self.export_textures_dialog.getExistingDirectory(
+            self,
+            "Select the directory to export the textures",
+            "",
+            QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks,
+        )
+        if dir_path:
+            self.export_textures_callback(dir_path)
+
     def disable(self):
-        self.add_button.setDisabled(True)
-        self.generate_atlas_button.setDisabled(True)
+        self._set_disable(True)
 
     def enable(self):
-        self.add_button.setDisabled(False)
-        self.generate_atlas_button.setDisabled(False)
+        self._set_disable(False)
+
+    def _set_disable(self, state: bool):
+        self.add_button.setDisabled(state)
+        self.generate_atlas_button.setDisabled(state)
+        self.export_textures_button.setDisabled(state)

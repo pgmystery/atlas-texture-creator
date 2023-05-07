@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 from pathlib import Path
 
 from PySide6.QtCore import Qt
@@ -40,6 +41,7 @@ class Application(QApplication):
         self.atlas_collection_toolbar = atlas_collection_toolbar = AtlasCollectionToolbar(
             add_texture_callback=self.add_textures,
             generate_atlas_callback=self.generate_atlas,
+            export_textures_callback=self.export_textures,
             open_path=blocks_path,
         )
         window.addToolBar(Qt.TopToolBarArea, atlas_collection_toolbar)
@@ -97,6 +99,19 @@ class Application(QApplication):
         self.atlas_manager.update_texture(self.current_atlas_collection.name, new_texture)
         self.current_atlas_collection.replace_texture(new_texture)
         self.tv.load_textures(self.current_atlas_collection)
+
+    def export_textures(self, dir_path: str):
+        export_dir = os.path.join(dir_path, self.current_atlas_collection.name)
+        if not os.path.exists(export_dir):
+            os.makedirs(export_dir)
+
+        for texture in self.current_atlas_collection.textures():
+            f = Path(texture.img_path)
+            column_str = str(texture.column)
+            row_str = str(texture.row)
+            new_file_name = f"{column_str},{row_str},{f.name}"
+            new_file_path = os.path.join(export_dir, new_file_name)
+            shutil.copy(texture.img_path, new_file_path)
 
     def generate_atlas(self, save_path: str):
         img = self.current_atlas_collection.generate_atlas()
