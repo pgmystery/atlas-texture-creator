@@ -6,7 +6,8 @@ from pathlib import Path
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QMessageBox
 
-from .MainWindow import MainWindow
+from atlas_texture_creator_gui.Window.GenerateAtlasWindow import GenerateAtlasWindow
+from .Window import MainWindow
 from .Toolbar import AtlasManagerToolbar, AtlasCollectionToolbar
 from .TexturesView import TexturesView
 from atlas_texture_creator import AtlasManager, AtlasCollection, AtlasTexture
@@ -114,8 +115,10 @@ class Application(QApplication):
             shutil.copy(texture.img_path, new_file_path)
 
     def generate_atlas(self, save_path: str):
-        img = self.current_atlas_collection.generate_atlas()
-        img.save(save_path)
+        self.generate_atlas_window = GenerateAtlasWindow()
+        self.generate_atlas_window.show()
+        # img = self.current_atlas_collection.generate_atlas()
+        # img.save(save_path)
 
 
 def start():
