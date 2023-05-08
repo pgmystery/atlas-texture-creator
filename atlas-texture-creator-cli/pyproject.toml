@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "atlas-texture-creator-cli"
+version = "0.1.0"
+description = ""
+authors = ["pglaw <philipp.glaw@gmx.de>"]
+readme = "README.md"
+packages = [{include = "atlas_texture_creator_cli"}]
+
+[tool.poetry.dependencies]
+python = "~3.11"
+atlas_texture_creator = {path = "../atlas-texture-creator", develop = true}
+typer = {extras = ["all"], version = "^0.9.0"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
