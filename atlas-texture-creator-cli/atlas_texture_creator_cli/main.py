@@ -4,8 +4,8 @@ import typer
 app = typer.Typer()
 
 
-@app.command()
-def
+# @app.command()
+# def
 
 
 if __name__ == "__main__":

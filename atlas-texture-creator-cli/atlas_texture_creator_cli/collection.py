@@ -6,4 +6,5 @@ app = typer.Typer()
 
 @app.command()
 def list():
-    atlas_manager.
+    # atlas_manager.
+    pass
