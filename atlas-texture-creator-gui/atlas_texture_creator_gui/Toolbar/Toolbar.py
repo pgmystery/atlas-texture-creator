@@ -113,14 +113,7 @@ class AtlasCollectionToolbar(QToolBar):
         self.add_texture_callback(file_paths)
 
     def generate_atlas(self, _):
-        self.generate_atlas_callback("")
-        # save_dir = self.save_atlas_dialog.getSaveFileName(
-        #     self,
-        #     "Path to save the atlas-image",
-        #     selectedFilter=self.texture_open_dialog_images_filter,
-        # )[0]
-        # if save_dir:
-        #     self.generate_atlas_callback(save_dir)
+        self.generate_atlas_callback()
 
     def export_textures(self, _):
         dir_path = self.export_textures_dialog.getExistingDirectory(
