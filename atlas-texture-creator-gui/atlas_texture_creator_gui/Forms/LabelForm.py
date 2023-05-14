@@ -10,8 +10,9 @@ class LabelForm(QWidget):
         self.form_layout.setContentsMargins(0, 0, 0, 0)
         self._form_label_widget = QLabel(label)
         self.form_layout.addWidget(self._form_label_widget)
-        self._form_widget = widget
         self.setLayout(self.form_layout)
+        if widget:
+            self.form_widget = widget
 
     @property
     def form_label(self):

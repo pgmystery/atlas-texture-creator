@@ -1,22 +1,29 @@
 from typing import Callable
-
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QPushButton, QVBoxLayout, QFileDialog, QDialog, \
-    QSpacerItem, QSizePolicy
+    QSpacerItem, QSizePolicy, QLabel, QSpinBox, QCheckBox
 
+from atlas_texture_creator.atlas_collection import GenerateAtlasOptionsSize, GenerateAtlasOptions
 from ..Forms.LabelForm import LabelForm
 
 
+class GenerateAtlasReturnType(GenerateAtlasOptions):
+    file_path: str
+
+
 class GenerateAtlasWindow(QDialog):
-    def __init__(self, generate_atlas_callback: Callable[[str], None]):
+    def __init__(self, generate_atlas_callback: Callable[[GenerateAtlasReturnType], None]):
         super().__init__()
         self.generate_atlas_callback = generate_atlas_callback
 
         self._layout = QVBoxLayout()
         self._layout.setSpacing(0)
-        self._layout.setContentsMargins(10, 10, 10, 0)
+        self._layout.setContentsMargins(10, 0, 10, 0)
 
         self.atlas_export_path_widget = AtlasExportPath()
         self._layout.addWidget(self.atlas_export_path_widget)
+
+        self.atlas_export_options = AtlasExportOptions()
+        self._layout.addWidget(self.atlas_export_options)
 
         self.buttons = AtlasExportButtons(
             on_cancel_callback=self.close,
@@ -24,18 +31,30 @@ class GenerateAtlasWindow(QDialog):
         )
         self._layout.addWidget(self.buttons)
 
-        width = 200
-        height = 100
+        width = 250
+        height = 180
         self.setFixedSize(width, height)
 
         self.setLayout(self._layout)
 
     def generate_atlas(self):
         save_path = self.atlas_export_path_widget.text()
-        self.generate_atlas_callback(save_path)
+        lock_size = self.atlas_export_options.texture_size()
+
+        result: GenerateAtlasReturnType = GenerateAtlasReturnType(
+            file_path=save_path,
+            lock_size=lock_size,
+        )
+
+        self.generate_atlas_callback(result)
+        self.close()
 
     def show(self):
-        self.atlas_export_path_widget.show_save_dialog()
+        save_dir = self.atlas_export_path_widget.show_save_dialog()
+
+        if save_dir == "":
+            return
+
         self.exec()
 
 
@@ -68,8 +87,67 @@ class AtlasExportPath(LabelForm):
         )[0]
         self.export_path_widget_edit_box.setText(save_dir)
 
+        return save_dir
+
     def text(self):
         return self.export_path_widget_edit_box.text()
+
+
+class AtlasExportOption(QWidget):
+    def __init__(self, checkbox_label: str, widget: QWidget):
+        super().__init__()
+        self.checked = False
+        self._widget = widget
+        self._widget.setDisabled(True)
+        _widget = QWidget(self)
+        self._layout = layout = QVBoxLayout()
+        layout.setSpacing(5)
+        layout.setContentsMargins(0, 0, 0, 0)
+        _widget.setLayout(layout)
+
+        self.checkbox = QCheckBox(checkbox_label)
+        self.checkbox.stateChanged.connect(self.on_check_changed)
+        layout.addWidget(self.checkbox)
+
+        self._layout.addWidget(widget)
+
+    def on_check_changed(self):
+        self.checked = self.checkbox.isChecked()
+        self._widget.setDisabled(not self.checked)
+
+
+class AtlasExportOptions(AtlasExportOption):
+    def __init__(self):
+        self._widget = QWidget()
+        self._layout = QHBoxLayout()
+        self._layout.setContentsMargins(0, 0, 0, 0)
+
+        self._width_edit_box = QSpinBox()
+        self._width_edit_box.setValue(32)
+        self._layout.addWidget(self._width_edit_box)
+        self._width_label = QLabel("Width")
+        self._layout.addWidget(self._width_label)
+        self._height_edit_box = QSpinBox()
+        self._height_edit_box.setValue(32)
+        self._layout.addWidget(self._height_edit_box)
+        self._height_label = QLabel("Height")
+        self._layout.addWidget(self._height_label)
+
+        self._widget.setLayout(self._layout)
+
+        super().__init__("Fixed texture size:", self._widget)
+
+    def texture_size(self) -> GenerateAtlasOptionsSize | None:
+        if not self.checked:
+            return
+
+        width = int(self._width_edit_box.text())
+        height = int(self._height_edit_box.text())
+
+        return GenerateAtlasOptionsSize(
+            width=width,
+            height=height,
+        )
 
 
 class AtlasExportButtons(QWidget):
