@@ -1,14 +1,23 @@
 import math
 from PIL import Image
+from pydantic import BaseModel
 
 from .atlas_texture import AtlasTexture
+
+
+class GenerateAtlasOptionsSize(BaseModel):
+    width: int
+    height: int
+
+
+class GenerateAtlasOptions(BaseModel):
+    lock_size: GenerateAtlasOptionsSize | None
 
 
 class AtlasCollection:
     def __init__(self, name: str):
         super().__init__()
         self.name = name
-        self.texture_size = 16
         self.texture_id = 1
         self._add_to_column = 0
         self.row_coords = AtlasCoord()
@@ -44,7 +53,6 @@ class AtlasCollection:
 
     def load_texture(self, texture: AtlasTexture):
         self._add_texture(texture)
-        # self.collection[texture.row][texture.column] = texture
 
     def load_textures(self, textures: list[AtlasTexture]):
         for texture in textures:
@@ -72,25 +80,65 @@ class AtlasCollection:
                 try:
                     yield self.collection[column][row]
                 except IndexError:
-                    continue
+                    break
 
     def replace_texture(self, new_texture: AtlasTexture):
         column = new_texture.column
         row = new_texture.row
         self.collection[column][row] = new_texture
 
-    def generate_atlas(self) -> Image:
-        atlas_size = math.ceil(math.sqrt(self.collection_length)) * self.texture_size
-        atlas = Image.new(mode="RGBA", size=(atlas_size, atlas_size))
+    def generate_atlas(self, options: GenerateAtlasOptions | None = None) -> Image:
+        atlas_width = 0
+        atlas_height = 0
+        square_number = math.ceil(math.sqrt(self.collection_length))
+        lock_texture_width = None
+        lock_texture_height = None
 
-        for texture in self.textures():
-            column = texture.column
-            row = texture.row
-            x = column * self.texture_size
-            y = row * self.texture_size
+        if options.lock_size:
+            lock_texture_width = options.lock_size.width
+            lock_texture_height = options.lock_size.height
 
-            img = Image.open(texture.img_path)
-            atlas.paste(img, (x, y))
+        atlas = Image.new(mode="RGBA", size=(0, 0))
+
+        for row in range(square_number):
+            column_width = 0
+            column_height = 0
+            column_imgs = []
+
+            for column in range(square_number):
+                try:
+                    texture = self.collection[row][column]
+                except IndexError:
+                    continue
+                img = Image.open(texture.img_path)
+
+                if lock_texture_width or lock_texture_height:
+                    new_img_width = lock_texture_width or img.width
+                    new_img_height = lock_texture_height or img.height
+                    img = img.resize((new_img_width, new_img_height))
+
+                img_width, img_height = img.size
+
+                if img_width > column_width:
+                    column_width = img_width
+                column_height += img_height
+
+                column_imgs.append(img)
+
+            offset_x = atlas_width
+            offset_y = 0
+
+            atlas_width += column_width
+            if column_height > atlas_height:
+                atlas_height = column_height
+
+            new_atlas = Image.new("RGBA", size=(atlas_width, atlas_height))
+            new_atlas.paste(atlas)
+            atlas = new_atlas
+
+            for img in column_imgs:
+                atlas.paste(img, (offset_x, offset_y))
+                offset_y += img.height
 
         return atlas
 

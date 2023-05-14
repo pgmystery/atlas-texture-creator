@@ -6,7 +6,8 @@ from pathlib import Path
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QMessageBox
 
-from .MainWindow import MainWindow
+from atlas_texture_creator_gui.Window.GenerateAtlasWindow import GenerateAtlasWindow, GenerateAtlasReturnType
+from .Window import MainWindow
 from .Toolbar import AtlasManagerToolbar, AtlasCollectionToolbar
 from .TexturesView import TexturesView
 from atlas_texture_creator import AtlasManager, AtlasCollection, AtlasTexture
@@ -24,6 +25,8 @@ class Application(QApplication):
 
         self.window = window = MainWindow("Atlas Texture Creator")
 
+        self.generate_atlas_window = GenerateAtlasWindow(self.generate_atlas)
+
         self.atlas_manager_toolbar = atlas_manager_toolbar = AtlasManagerToolbar(
             new_atlas_collection_callback=self.new_atlas_collection,
             delete_atlas_collection_callback=self.delete_atlas_collection,
@@ -40,7 +43,7 @@ class Application(QApplication):
 
         self.atlas_collection_toolbar = atlas_collection_toolbar = AtlasCollectionToolbar(
             add_texture_callback=self.add_textures,
-            generate_atlas_callback=self.generate_atlas,
+            generate_atlas_callback=self.show_generate_atlas_dialog,
             export_textures_callback=self.export_textures,
             open_path=blocks_path,
         )
@@ -113,8 +116,12 @@ class Application(QApplication):
             new_file_path = os.path.join(export_dir, new_file_name)
             shutil.copy(texture.img_path, new_file_path)
 
-    def generate_atlas(self, save_path: str):
-        img = self.current_atlas_collection.generate_atlas()
+    def show_generate_atlas_dialog(self):
+        self.generate_atlas_window.show()
+
+    def generate_atlas(self, options: GenerateAtlasReturnType):
+        save_path = options.file_path
+        img = self.current_atlas_collection.generate_atlas(options)
         img.save(save_path)
 
 
