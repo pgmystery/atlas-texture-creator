@@ -87,7 +87,6 @@ class AtlasCollection:
         row = new_texture.row
         self.collection[column][row] = new_texture
 
-    # TODO!
     def generate_atlas(self, options: GenerateAtlasOptions | None = None) -> Image:
         atlas_width = 0
         atlas_height = 0
@@ -111,7 +110,7 @@ class AtlasCollection:
                     texture = self.collection[row][column]
                 except IndexError:
                     continue
-                column_imgs.append(img := Image.open(texture.img_path))
+                img = Image.open(texture.img_path)
 
                 if lock_texture_width or lock_texture_height:
                     new_img_width = lock_texture_width or img.width
@@ -123,6 +122,8 @@ class AtlasCollection:
                 if img_width > column_width:
                     column_width = img_width
                 column_height += img_height
+
+                column_imgs.append(img)
 
             offset_x = atlas_width
             offset_y = 0
