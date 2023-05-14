@@ -1,4 +1,6 @@
 import math
+from typing import Dict
+
 from PIL import Image
 from pydantic import BaseModel
 
@@ -12,6 +14,34 @@ class GenerateAtlasOptionsSize(BaseModel):
 
 class GenerateAtlasOptions(BaseModel):
     lock_size: GenerateAtlasOptionsSize | None
+
+
+class GenerateAtlasCoordTexture(BaseModel):
+    x: int
+    y: int
+    width: int
+    height: int
+
+
+GenerateAtlasReturnType = Dict[str, GenerateAtlasCoordTexture]
+
+
+class GenerateAtlasReturnTypeOut(BaseModel):
+    __root__: GenerateAtlasReturnType
+
+
+class GenerateAtlasTextureCoords:
+    def __init__(self, init_data: GenerateAtlasReturnType = None):
+        if init_data is None:
+            init_data = {}
+
+        self.data: GenerateAtlasReturnType = init_data
+
+    def add_data(self, label: str, data: GenerateAtlasCoordTexture):
+        self.data[label] = data
+
+    def json(self):
+        return GenerateAtlasReturnTypeOut.parse_obj(self.data).json()
 
 
 class AtlasCollection:
@@ -87,7 +117,8 @@ class AtlasCollection:
         row = new_texture.row
         self.collection[column][row] = new_texture
 
-    def generate_atlas(self, options: GenerateAtlasOptions | None = None) -> Image:
+    def generate_atlas(self, options: GenerateAtlasOptions | None = None) -> tuple[Image.Image, GenerateAtlasTextureCoords]:
+        textures_coord = GenerateAtlasTextureCoords()
         atlas_width = 0
         atlas_height = 0
         square_number = math.ceil(math.sqrt(self.collection_length))
@@ -123,7 +154,10 @@ class AtlasCollection:
                     column_width = img_width
                 column_height += img_height
 
-                column_imgs.append(img)
+                column_imgs.append({
+                    "label": texture.label,
+                    "img": img,
+                })
 
             offset_x = atlas_width
             offset_y = 0
@@ -136,11 +170,21 @@ class AtlasCollection:
             new_atlas.paste(atlas)
             atlas = new_atlas
 
-            for img in column_imgs:
+            for img_obj in column_imgs:
+                label = img_obj["label"]
+                img = img_obj["img"]
+
+                textures_coord.add_data(label, GenerateAtlasCoordTexture(
+                    x=offset_x,
+                    y=offset_y,
+                    width=img.width,
+                    height=img.height,
+                ))
+
                 atlas.paste(img, (offset_x, offset_y))
                 offset_y += img.height
 
-        return atlas
+        return atlas, textures_coord
 
     def _add_texture(self, atlas_texture: AtlasTexture):
         atlas_length = math.sqrt(self.collection_length + 1)

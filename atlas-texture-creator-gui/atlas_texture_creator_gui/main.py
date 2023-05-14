@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import shutil
@@ -121,8 +122,15 @@ class Application(QApplication):
 
     def generate_atlas(self, options: GenerateAtlasReturnType):
         save_path = options.file_path
-        img = self.current_atlas_collection.generate_atlas(options)
+        save_path_dir = os.path.dirname(save_path)
+        save_path_obj = Path(save_path)
+        texture_coords_path = os.path.join(save_path_dir, f"{save_path_obj.stem}.json")
+
+        img, texture_coords = self.current_atlas_collection.generate_atlas(options)
+
         img.save(save_path)
+        with open(texture_coords_path, 'w') as f:
+            f.write(texture_coords.json())
 
 
 def start():
