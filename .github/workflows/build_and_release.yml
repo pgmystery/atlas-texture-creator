@@ -45,15 +45,15 @@ jobs:
           poetry run build
 
       - name: Set zip-file name (linux)
-        run: $ZIP_FILE_NAME=atlas-texture-creator-linux.zip
+        run: echo "$ZIP_FILE_NAME=atlas-texture-creator-linux.zip" >> $GITHUB_ENV
         if: matrix.os == 'ubuntu-latest'
 
       - name: Set zip-file name (windows)
-        run: $ZIP_FILE_NAME=atlas-texture-creator-windows.zip
+        run: echo "$ZIP_FILE_NAME=atlas-texture-creator-windows.zip" >> $GITHUB_ENV
         if: matrix.os == 'windows-latest'
 
       - name: Set zip-file name (macos)
-        run: $ZIP_FILE_NAME=atlas-texture-creator-macos.zip
+        run: echo "$ZIP_FILE_NAME=atlas-texture-creator-macos.zip" >> $GITHUB_ENV
         if: matrix.os == 'macos-latest'
 
       - name: Zip files
