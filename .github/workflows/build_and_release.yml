@@ -15,9 +15,9 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-latest
+#          - ubuntu-latest
           - windows-latest
-          - macos-latest
+#          - macos-latest
 
     defaults:
       run:
@@ -45,22 +45,25 @@ jobs:
           poetry run build
 
       - name: Set zip-file name (linux)
-        run: echo "ZIP_FILE_NAME=atlas-texture-creator-linux.zip" >> $GITHUB_ENV
+        run: |
+          echo "ZIP_FILE_NAME=atlas-texture-creator-linux.zip" >> $GITHUB_ENV
         if: matrix.os == 'ubuntu-latest'
 
       - name: Set zip-file name (windows)
-        run: echo "ZIP_FILE_NAME=atlas-texture-creator-windows.zip" >> $GITHUB_ENV
+        run: |
+          echo "ZIP_FILE_NAME=atlas-texture-creator-windows.zip" >> $env:GITHUB_ENV
         if: matrix.os == 'windows-latest'
 
       - name: Set zip-file name (macos)
-        run: echo "ZIP_FILE_NAME=atlas-texture-creator-macos.zip" >> $GITHUB_ENV
+        run: |
+          echo "ZIP_FILE_NAME=atlas-texture-creator-macos.zip" >> $GITHUB_ENV
         if: matrix.os == 'macos-latest'
 
       - name: Zip files
         uses: vimtor/action-zip@v1
         with:
           files: ./dist/atlas-texture-creator/
-          dest: ${{ env.ZIP_FILE_NAME }}
+          dest: ./${{ env.ZIP_FILE_NAME }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
