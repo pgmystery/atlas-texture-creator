@@ -62,6 +62,13 @@ jobs:
       - name: Debug ls
         run: ls -lah
 
+      - name: DEBUG variable
+        run: |
+          echo 'github.workspace === ${{ github.workspace }}'
+          echo "GITHUB_WORKSPACE === $GITHUB_WORKSPACE"
+          echo 'runner.workspace === ${{ runner.workspace }}'
+          echo "RUNNER_WORKSPACE === $RUNNER_WORKSPACE"
+
       - name: Zip files
         uses: vimtor/action-zip@v1
         with:
