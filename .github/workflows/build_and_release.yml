@@ -59,6 +59,9 @@ jobs:
           echo "ZIP_FILE_NAME=atlas-texture-creator-macos.zip" >> $GITHUB_ENV
         if: matrix.os == 'macos-latest'
 
+      - name: Debug ls
+        run: ls -lah
+
       - name: Zip files
         uses: vimtor/action-zip@v1
         with:
