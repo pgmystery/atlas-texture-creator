@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-latest
+#          - ubuntu-latest
           - windows-latest
           - macos-latest
 
@@ -46,7 +46,7 @@ jobs:
 
       - name: Debug list-files
         run: |
-          ls -lah ./dist
+          ls ./dist
 
 #      - name: Upload artifact
 #        uses: actions/upload-artifact@v3
