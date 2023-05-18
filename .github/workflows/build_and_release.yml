@@ -16,8 +16,8 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-#          - windows-latest
-#          - macos-latest
+          - windows-latest
+          - macos-latest
 
     defaults:
       run:
@@ -26,23 +26,23 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-#      - name: Setup Python
-#        uses: actions/setup-python@v4
-#        with:
-#          python-version: '3.11'
-#
-#      - name: Install poetry
-#        uses: abatilo/actions-poetry@v2
-#        with:
-#          poetry-version: 1.4.2
-#
-#      - name: Install dependencies
-#        run: |
-#          poetry install
-#
-#      - name: Run build script
-#        run: |
-#          poetry run build
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install poetry
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: 1.4.2
+
+      - name: Install dependencies
+        run: |
+          poetry install
+
+      - name: Run build script
+        run: |
+          poetry run build
 
       - name: Set zip-file name (linux)
         run: |
@@ -59,21 +59,11 @@ jobs:
           echo "ZIP_FILE_NAME=atlas-texture-creator-macos.zip" >> $GITHUB_ENV
         if: matrix.os == 'macos-latest'
 
-      - name: Debug ls
-        run: ls -lah
-
-      - name: DEBUG variable
-        run: |
-          echo 'github.workspace === ${{ github.workspace }}'
-          echo "GITHUB_WORKSPACE === $GITHUB_WORKSPACE"
-          echo 'runner.workspace === ${{ runner.workspace }}'
-          echo "RUNNER_WORKSPACE === $RUNNER_WORKSPACE"
-
       - name: Zip files
         uses: vimtor/action-zip@v1
         with:
-#          files: dist/atlas-texture-creator
-          files: ./atlas-texture-creator-gui/atlas_texture_creator_gui/
+          # Files or directories to zip, relative to GITHUB_WORKSPACE environmental variable
+          files: ./atlas-texture-creator-gui/dist/
           dest: ./${{ env.ZIP_FILE_NAME }}
 
       - name: Upload artifact
