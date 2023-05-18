@@ -15,8 +15,8 @@ jobs:
       fail-fast: false
       matrix:
         os:
-#          - ubuntu-latest
-          - windows-latest
+          - ubuntu-latest
+#          - windows-latest
 #          - macos-latest
 
     defaults:
@@ -63,7 +63,7 @@ jobs:
         uses: vimtor/action-zip@v1
         with:
 #          files: dist/atlas-texture-creator
-          files: atlas_texture_creator_gui
+          files: atlas_texture_creator_gui/
           dest: ./${{ env.ZIP_FILE_NAME }}
 
       - name: Upload artifact
