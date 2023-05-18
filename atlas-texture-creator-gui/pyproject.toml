@@ -13,8 +13,8 @@ build = "build:build"
 [tool.poetry.dependencies]
 python = "~3.11"
 pyside6 = "^6.5.0"
-atlas_texture_creator = {path = "../atlas-texture-creator", develop = true}
 pyinstaller = "^5.11.0"
+atlas_texture_creator = {path = "../atlas-texture-creator", develop = true}
 
 [build-system]
 requires = ["poetry-core"]
