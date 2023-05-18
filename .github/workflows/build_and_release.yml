@@ -73,7 +73,7 @@ jobs:
         uses: vimtor/action-zip@v1
         with:
 #          files: dist/atlas-texture-creator
-          files: atlas_texture_creator_gui/
+          files: ./atlas-texture-creator-gui/atlas_texture_creator_gui/
           dest: ./${{ env.ZIP_FILE_NAME }}
 
       - name: Upload artifact
