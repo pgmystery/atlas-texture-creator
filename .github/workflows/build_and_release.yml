@@ -26,6 +26,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Install OS-dependencies (Linux)
+        run: |
+          apt install -y qt6-base-dev libxcb-cursor0
+        if: matrix.os == 'ubuntu-latest'
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
