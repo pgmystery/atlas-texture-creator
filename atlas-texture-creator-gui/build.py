@@ -14,12 +14,11 @@ def build():
         "--name",
         "Atlas Texture Creator",
         "--onefile",
-        # "--noconsole",
+        "--noconsole",
         "--distpath",
         dist_path,
         "run.py",
         "--clean",
-        "--debug=all",
     ])
 
 
