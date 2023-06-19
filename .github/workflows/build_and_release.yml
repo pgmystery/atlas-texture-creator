@@ -1,11 +1,9 @@
 name: Application-Build and Release
 
 on:
-  push:
-#    tags:
-#      - '*'
-    branches:
-      - ci_deploy
+  release:
+    types:
+      - published
 
 jobs:
   build:
