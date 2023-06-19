@@ -69,7 +69,19 @@ jobs:
           files: ./atlas-texture-creator-gui/dist/
           dest: ./${{ env.ZIP_FILE_NAME }}
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
+      - name: Get release
+        id: get_release
+        uses: bruceadams/get-release@v1.3.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          path: ./${{ env.ZIP_FILE_NAME }}
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          asset_path: ./${{ env.ZIP_FILE_NAME }}
+          asset_name: ${{ env.ZIP_FILE_NAME }}
+          asset_content_type: application/zip
