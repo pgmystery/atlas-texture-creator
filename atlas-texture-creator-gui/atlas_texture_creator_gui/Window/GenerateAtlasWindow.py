@@ -85,7 +85,9 @@ class AtlasExportPath(LabelForm):
             "Path to save the atlas-image",
             selectedFilter=self.texture_open_dialog_images_filter,
         )[0]
-        self.export_path_widget_edit_box.setText(save_dir)
+
+        if save_dir != "":
+            self.export_path_widget_edit_box.setText(save_dir)
 
         return save_dir
 
