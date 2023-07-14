@@ -32,7 +32,12 @@ class AtlasManagerToolbar(QToolBar):
         layout.setSpacing(10)
 
     def on_new_button_click(self, _):
-        new_atlas_collection_name, is_ok = QInputDialog.getText(self, "Create Atlas-Collection", "Enter your new Atlas-Collection name")
+        new_atlas_collection_name, is_ok = QInputDialog.getText(
+            self,
+            "Create Atlas-Collection",
+            "Enter your new Atlas-Collection name"
+        )
+
         if is_ok:
             self.new_atlas_collection_callback(new_atlas_collection_name)
 
@@ -110,7 +115,8 @@ class AtlasCollectionToolbar(QToolBar):
             self.texture_open_dialog_images_filter,
             self.texture_open_dialog_images_filter
         )[0]
-        self.add_texture_callback(file_paths)
+        if len(file_paths) > 0:
+            self.add_texture_callback(file_paths)
 
     def generate_atlas(self, _):
         self.generate_atlas_callback()
