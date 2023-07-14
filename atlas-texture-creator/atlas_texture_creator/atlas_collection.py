@@ -117,7 +117,7 @@ class AtlasCollection:
         row = new_texture.row
         self.collection[column][row] = new_texture
 
-    def generate_atlas(self, options: GenerateAtlasOptions | None = None) -> tuple[Image.Image, GenerateAtlasTextureCoords]:
+    def generate_atlas(self, options: GenerateAtlasOptions = None) -> tuple[Image.Image, GenerateAtlasTextureCoords]:
         textures_coord = GenerateAtlasTextureCoords()
         atlas_width = 0
         atlas_height = 0
@@ -125,7 +125,7 @@ class AtlasCollection:
         lock_texture_width = None
         lock_texture_height = None
 
-        if options.lock_size:
+        if options is not None and options.lock_size:
             lock_texture_width = options.lock_size.width
             lock_texture_height = options.lock_size.height
 
@@ -143,7 +143,7 @@ class AtlasCollection:
                     continue
                 img = Image.open(texture.img_path)
 
-                if lock_texture_width or lock_texture_height:
+                if lock_texture_width is not None or lock_texture_height is not None:
                     new_img_width = lock_texture_width or img.width
                     new_img_height = lock_texture_height or img.height
                     img = img.resize((new_img_width, new_img_height))

@@ -62,7 +62,6 @@ class AtlasStore:
 
         return atlas_collection
 
-
     def _load_collection_model(self, collection_name: str) -> AtlasCollectionModel:
         with Session(self.engine) as session:
             statement = select(AtlasCollectionModel).where(AtlasCollectionModel.name == collection_name)
