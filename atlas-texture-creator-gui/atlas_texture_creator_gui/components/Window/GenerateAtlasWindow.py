@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QPushButton, QVBo
     QSpacerItem, QSizePolicy, QLabel, QSpinBox, QCheckBox
 
 from atlas_texture_creator.atlas_collection import GenerateAtlasOptionsSize, GenerateAtlasOptions
-from ..Forms.LabelForm import LabelForm
+from atlas_texture_creator_gui.components.Forms import LabelForm
 
 
 class GenerateAtlasReturnType(GenerateAtlasOptions):

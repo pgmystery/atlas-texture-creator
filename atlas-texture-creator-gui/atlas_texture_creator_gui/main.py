@@ -6,9 +6,8 @@ from pathlib import Path
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QMessageBox
 
-from atlas_texture_creator_gui.Window.GenerateAtlasWindow import GenerateAtlasWindow, GenerateAtlasReturnType
-from .Window import MainWindow
-from .Toolbar import AtlasManagerToolbar, AtlasCollectionToolbar
+from atlas_texture_creator_gui.components.Bars.Toolbar import AtlasManagerToolbar, AtlasCollectionToolbar
+from atlas_texture_creator_gui.components.Window import MainWindow, GenerateAtlasWindow, GenerateAtlasReturnType
 from .TexturesView import TexturesView
 from atlas_texture_creator import AtlasManager, AtlasCollection, AtlasTexture
 
