@@ -7,6 +7,8 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 from atlas_texture_creator_gui.Window.GenerateAtlasWindow import GenerateAtlasWindow, GenerateAtlasReturnType
+from atlas_texture_creator_gui.handlers import CollectionCacheHandler
+from atlas_texture_creator_gui.handlers.CollectionCacheHandler import CollectionCache
 from .Window import MainWindow
 from .Toolbar import AtlasManagerToolbar, AtlasCollectionToolbar
 from .TexturesView import TexturesView
@@ -19,6 +21,8 @@ class Application(QApplication):
         parent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
         resources_path = os.path.join(parent_path, "resources")
         blocks_path = os.path.join(resources_path, "block", "textures")
+
+        self._collection_cache_handler = CollectionCacheHandler(".data")
 
         self.atlas_manager = AtlasManager("")
         self.current_atlas_collection: AtlasCollection | None = None
@@ -87,18 +91,29 @@ class Application(QApplication):
         )
         if answer == QMessageBox.Yes:
             self.atlas_manager.delete_collection(collection_name)
+            cache_collection = self._get_current_cache_collection()
+            cache_collection.delete()
             self.load_atlas_collections()
 
     def add_textures(self, texture_paths: list[str]):
-        current_atlas_collection_name = self.current_atlas_collection.name
-        for file_path in texture_paths:
-            print(file_path)
-            f = Path(file_path)
-            atlas_texture = self.current_atlas_collection.add_texture(file_path, f.stem)
-            self.atlas_manager.add_texture(current_atlas_collection_name, atlas_texture)
+        cache_collection = self._get_current_cache_collection()
+
+        for old_file_path in texture_paths:
+            file_path = cache_collection.add_texture(old_file_path)
+            atlas_texture = self.current_atlas_collection.add_texture(str(file_path), file_path.stem)
+            self.atlas_manager.add_texture(cache_collection.collection_name, atlas_texture)
             self.tv.add_texture(atlas_texture)
 
     def replace_texture(self, new_texture: AtlasTexture):
+        cache_collection = self._get_current_cache_collection()
+
+        old_texture = self.current_atlas_collection.get_texture(new_texture.row, new_texture.column)
+        old_texture_path = old_texture.texture_path
+        new_texture_path = new_texture.texture_path
+        if old_texture_path != new_texture_path:
+            old_texture_name = Path(old_texture_path).name
+            new_texture.texture_path = cache_collection.replace_texture(old_texture_name, new_texture_path)
+
         self.atlas_manager.update_texture(self.current_atlas_collection.name, new_texture)
         self.current_atlas_collection.replace_texture(new_texture)
         self.tv.load_textures(self.current_atlas_collection)
@@ -130,6 +145,11 @@ class Application(QApplication):
         img.save(save_path)
         with open(texture_coords_path, 'w') as f:
             f.write(texture_coords.json())
+
+    def _get_current_cache_collection(self) -> CollectionCache:
+        current_atlas_collection_name = self.current_atlas_collection.name
+        cache_collection = self._collection_cache_handler(current_atlas_collection_name)
+        return cache_collection
 
 
 def start():
