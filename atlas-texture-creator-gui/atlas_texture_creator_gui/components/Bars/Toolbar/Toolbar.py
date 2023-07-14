@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QToolBar, QPushButton, QComboBox, QInputDialog, QS
     QHBoxLayout, QFileDialog
 
 from atlas_texture_creator import AtlasCollection
+from atlas_texture_creator_gui.components.Window.ExportTextures import ExportTexturesWindow
 
 
 class AtlasManagerToolbar(QToolBar):
@@ -116,14 +117,16 @@ class AtlasCollectionToolbar(QToolBar):
         self.generate_atlas_callback()
 
     def export_textures(self, _):
-        dir_path = self.export_textures_dialog.getExistingDirectory(
-            self,
-            "Select the directory to export the textures",
-            "",
-            QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks,
-        )
-        if dir_path:
-            self.export_textures_callback(dir_path)
+        export_textures_window = ExportTexturesWindow()
+        export_textures_window.show()
+        # dir_path = self.export_textures_dialog.getExistingDirectory(
+        #     self,
+        #     "Select the directory to export the textures",
+        #     "",
+        #     QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks,
+        # )
+        # if dir_path:
+        #     self.export_textures_callback(dir_path)
 
     def disable(self):
         self._set_disable(True)
