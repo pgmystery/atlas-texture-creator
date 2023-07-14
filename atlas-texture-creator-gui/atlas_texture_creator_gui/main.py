@@ -7,13 +7,17 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 from atlas_texture_creator_gui.Window.GenerateAtlasWindow import GenerateAtlasWindow, GenerateAtlasReturnType
+
+from atlas_texture_creator_gui.components.Bars import MenuBar
+from atlas_texture_creator_gui.components.Bars.MenuBar import MenuBarSubMenu, MenuBarAction
 from .Window import MainWindow
 from .Toolbar import AtlasManagerToolbar, AtlasCollectionToolbar
 from .TexturesView import TexturesView
 from atlas_texture_creator import AtlasManager, AtlasCollection, AtlasTexture
+from atlas_texture_creator_gui.types import MenuBarType
 
 
-class Application(QApplication):
+class AtlasTextureCreatorGUI(QApplication):
     def __init__(self):
         super().__init__()
         parent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
@@ -50,6 +54,66 @@ class Application(QApplication):
         window.addToolBar(Qt.TopToolBarArea, atlas_collection_toolbar)
 
         self.load_atlas_collections()
+
+        self.menu_bar = MenuBar[MenuBarType](
+            self.window.menuBar(),
+            {
+                "file": MenuBarSubMenu(
+                    label="&File",
+                    menu={
+                        "quit": MenuBarAction(
+                            label="&Quit",
+                            action=self.exit,
+                        ),
+                    }
+                ),
+                "atlas": MenuBarSubMenu(
+                    label="&Atlas",
+                    menu={
+                        "new_atlas_collection": MenuBarAction(
+                            label="&New Atlas-Collection",
+                            action=self.atlas_manager_toolbar.on_new_button_click,
+                        ),
+                        "delete_atlas_collection": MenuBarAction(
+                            label="&Delete selected Atlas-Collection",
+                            action=self.atlas_manager_toolbar.delete_atlas_collection,
+                        ),
+                        "---": "---",
+                        "generate_atlas": MenuBarAction(
+                            label="&Generate Atlas",
+                            action=self.atlas_collection_toolbar.generate_atlas,
+                        ),
+                    }
+                ),
+                "textures": MenuBarSubMenu(
+                    label="&Textures",
+                    menu={
+                        "add_texture": MenuBarAction(
+                            label="&Add Texture",
+                            action=self.atlas_collection_toolbar.on_add_button_click,
+                        ),
+                        "---": "---",
+                        "export_textures": MenuBarAction(
+                            label="&Export Textures",
+                            action=self.atlas_collection_toolbar.export_textures,
+                        ),
+                    }
+                ),
+                "help": MenuBarSubMenu(
+                    label="&Help",
+                    menu={
+                        "about": MenuBarAction(
+                            label="&About",
+                            action=self.about,
+                        ),
+                    }
+                ),
+            }
+        )
+
+        self.menu_bar.menu.atlas.generate_atlas.setDisabled(True)
+
+        self.setStyle("fusion")
 
         window.show()
 
@@ -131,9 +195,12 @@ class Application(QApplication):
         with open(texture_coords_path, 'w') as f:
             f.write(texture_coords.json())
 
+    def about(self):
+        print("ABOUT...")
+
 
 def start():
-    Application()
+    AtlasTextureCreatorGUI()
 
 
 if __name__ == '__main__':
