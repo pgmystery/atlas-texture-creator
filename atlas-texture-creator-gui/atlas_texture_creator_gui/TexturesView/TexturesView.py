@@ -1,6 +1,4 @@
-from typing import Callable
-
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QScrollArea, QGridLayout, QWidget, QHBoxLayout
 
 from atlas_texture_creator import AtlasCollection
@@ -10,9 +8,9 @@ from atlas_texture_creator.atlas_texture import AtlasTexture
 
 
 class TexturesView(QWidget):
-    def __init__(self, replace_texture_callback: Callable[[AtlasTexture], None]):
+    def __init__(self, atlas_collection: AtlasCollection = None):
         super().__init__()
-        self._replace_texture_callback = replace_texture_callback
+        self.atlas_collection = atlas_collection
         self.selected_texture = None
         self.layout = layout = QHBoxLayout()
         layout.setSpacing(0)
@@ -32,6 +30,30 @@ class TexturesView(QWidget):
 
         self.tvii = TextureViewImageInfo(self.close_texture_info, self.on_texture_save)
         layout.addWidget(self.tvii)
+
+        self.load_collection(atlas_collection)
+
+    def load_collection(self, atlas_collection: AtlasCollection = None):
+        self.atlas_collection = atlas_collection
+
+        if atlas_collection is not None:
+            pass
+
+    @Slot(AtlasCollection)
+    def on_collection_created(self, collection: AtlasCollection):
+        if self.atlas_collection is None:
+            self.load_collection(collection)
+
+    @property
+    def atlas_collection(self):
+        return self._atlas_collection
+
+    @atlas_collection.setter
+    def atlas_collection(self, atlas_collection: AtlasCollection = None):
+        self._atlas_collection = atlas_collection
+
+        if atlas_collection is not None:
+            pass
 
     def on_texture_click(self, tvi: TextureViewImage):
         if self.selected_texture != tvi:

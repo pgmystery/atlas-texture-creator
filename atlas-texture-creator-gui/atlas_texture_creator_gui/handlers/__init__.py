@@ -1,1 +1,2 @@
-from atlas_texture_creator_gui.handlers.CollectionCacheHandler import CollectionCacheHandler
+from atlas_texture_creator_gui.handlers.AtlasManagerHandler import AtlasManagerHandler
+from atlas_texture_creator_gui.handlers.CollectionCacheHandler import CollectionCacheHandler, CollectionCache
