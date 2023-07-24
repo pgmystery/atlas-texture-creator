@@ -173,13 +173,13 @@ class MainWindowMenubar:
     @Slot()
     def load_collections(self):
         class LoadCollection:
-            def __init__(self, atlas_manager_handler: AtlasManagerHandler, name: str):
-                self.atlas_manager_handler = atlas_manager_handler
+            def __init__(self, name: str):
                 self.name = name
 
             def __call__(self, *args, **kwargs):
-                self.atlas_manager_handler.current_collection = self.name
+                atlas_manager_handler.current_collection = self.name
 
+        atlas_manager_handler = self.atlas_manager_handler
         collection_menu = {}
         counter = 0
         collections = self.atlas_manager_handler.collections()
@@ -189,7 +189,7 @@ class MainWindowMenubar:
             collection_name = collection.name
             action = MenuBarAction(
                 label=collection_name,
-                action=LoadCollection(self.atlas_manager_handler, collection_name),
+                action=LoadCollection(collection_name),
             )
             if current_collection is not None and collection_name == current_collection.name:
                 action.setDisabled(True)
