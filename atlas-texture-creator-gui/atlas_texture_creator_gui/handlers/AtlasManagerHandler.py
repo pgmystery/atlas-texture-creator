@@ -26,11 +26,14 @@ class AtlasManagerHandler(QObject):
         self._collection_cache_handler = CollectionCacheHandler(cache_dir)
 
     def load_collections(self):
-        collections = self.atlas_manager.list_collections()
+        collections = self.collections()
         self.on_load_collections.emit(collections)
 
         if len(collections) > 0 and self.current_collection is None:
             self.current_collection = collections[0]
+
+    def collections(self):
+        return self.atlas_manager.list_collections()
 
     @overload
     def current_collection(self, collection: AtlasCollection): ...

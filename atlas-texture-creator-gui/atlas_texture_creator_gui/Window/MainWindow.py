@@ -17,6 +17,7 @@ class ArbitraryBaseModel(BaseModel):
 
 
 class MenuBarFileMenu(ArbitraryBaseModel):
+    load_collection: MenuBarSubMenu
     quit: MenuBarAction
 
 
@@ -93,6 +94,10 @@ class MainWindowMenubar:
                 "file": MenuBarSubMenu(
                     label="&File",
                     menu={
+                        "load_collection": MenuBarSubMenu(
+                            label="&Load Collection",
+                            menu={},
+                        ),
                         "quit": MenuBarAction(
                             label="&Quit",
                             action=exit_callback,
@@ -146,7 +151,11 @@ class MainWindowMenubar:
         self.menu_bar.menu.atlas.generate_atlas.setDisabled(True)
         self.menu_bar.menu.textures.add_texture.setDisabled(True)
         self.menu_bar.menu.textures.export_textures.setDisabled(True)
+
+        self.atlas_manager_handler.on_load_collections.connect(self.load_collections)
+        self.atlas_manager_handler.on_current_collection_changed.connect(self.load_collections)
         self.atlas_manager_handler.on_current_collection_changed.connect(self.current_collection_changed)
+        self.atlas_manager_handler.on_collection_created.connect(self.load_collections)
 
     @Slot(AtlasCollection)
     def current_collection_changed(self, collection: AtlasCollection | None):
@@ -160,3 +169,34 @@ class MainWindowMenubar:
             self.menu_bar.menu.atlas.generate_atlas.setDisabled(False)
             self.menu_bar.menu.textures.add_texture.setDisabled(False)
             self.menu_bar.menu.textures.export_textures.setDisabled(False)
+
+    @Slot()
+    def load_collections(self):
+        class LoadCollection:
+            def __init__(self, atlas_manager_handler: AtlasManagerHandler, name: str):
+                self.atlas_manager_handler = atlas_manager_handler
+                self.name = name
+
+            def __call__(self, *args, **kwargs):
+                self.atlas_manager_handler.current_collection = self.name
+
+        collection_menu = {}
+        counter = 0
+        collections = self.atlas_manager_handler.collections()
+        current_collection = self.atlas_manager_handler.current_collection
+
+        for collection in collections:
+            collection_name = collection.name
+            action = MenuBarAction(
+                label=collection_name,
+                action=LoadCollection(self.atlas_manager_handler, collection_name),
+            )
+            if current_collection is not None and collection_name == current_collection.name:
+                action.setDisabled(True)
+                action.setCheckable(True)
+                action.setChecked(True)
+            collection_menu[f"c{counter}"] = action
+            counter += 1
+
+        self.menu_bar.menu.file.load_collection.set_menu(collection_menu)
+        self.menu_bar.update()

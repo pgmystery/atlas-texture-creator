@@ -35,12 +35,15 @@ class MenuBarSubMenu(QMenu):
     def __init__(self, label: str, menu: MenuBarMenuType):
         super().__init__()
         self._label = label
+        self.set_menu(menu)
+
+        self.setTitle(label)
+
+    def set_menu(self, menu: MenuBarMenuType):
         self._menu = menu
 
         for item_name, item in menu.items():
             setattr(self, item_name, item)
-
-        self.setTitle(label)
 
     @property
     def label(self):
@@ -63,9 +66,13 @@ MenuBarMenuTypeGeneric = TypeVar("MenuBarMenuTypeGeneric", bound=MenuBarMenuType
 class MenuBar(Generic[MenuBarMenuTypeGeneric]):
     def __init__(self, menu_bar: QMenuBar, menu: MenuBarMenuTypeGeneric):
         self.menu_bar = menu_bar
+        self._menu = menu
         self.menu: MenuBarMenuTypeGeneric = DotDict(menu)
 
-        self._create_menu(menu_bar, menu)
+        self.update()
+
+    def update(self):
+        self._create_menu(self.menu_bar, self._menu)
 
     def _create_menu(self, menu: QMenuBar | MenuBarSubMenu, sub_menu: MenuBarMenuTypeGeneric):
         for menu_item in sub_menu.values():
