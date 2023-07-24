@@ -27,12 +27,20 @@ class AtlasManagerToolbar(QToolBar):
 
         atlas_manager_handler.on_collection_created.connect(self.on_collection_created)
         atlas_manager_handler.on_load_collections.connect(self.load_atlas_collections)
+        atlas_manager_handler.on_collection_deleted.connect(self.on_collection_deleted)
 
     def on_create_collection_button_clicked(self, _):
         self.atlas_manager_handler.create_collection()
 
     def current_atlas_collection_changed(self, collection_name: str):
+        if collection_name == "":
+            return
+
         self.atlas_manager_handler.current_collection = collection_name
+
+        print(self.atlas_manager_handler.current_collection.textures())
+        # if len(self.atlas_manager_handler.current_collection.textures()) == 0:
+        #     pass
 
     def set_current_atlas_collection(self, collection_name: str):
         index = self.load_combo_box.findText(collection_name)
@@ -66,13 +74,19 @@ class AtlasManagerToolbar(QToolBar):
         collection_name = self.load_combo_box.currentText()
         self.atlas_manager_handler.delete_collection(collection_name)
 
+    @Slot(str)
+    def on_collection_deleted(self, collection_name: str):
+        item_index = self.load_combo_box.findText(collection_name)
+
+        if item_index >= 0:
+            self.load_combo_box.removeItem(item_index)
+            self.refresh_interface()
+
 
 class AtlasCollectionToolbar(QToolBar):
     def __init__(self, atlas_manager_handler: AtlasManagerHandler):
         super().__init__()
         self.atlas_manager_handler = atlas_manager_handler
-        self.texture_open_dialog = QFileDialog(self)
-        self.texture_open_dialog_images_filter = "Images (*.png *.jpg)"
         self.save_atlas_dialog = QFileDialog(self)
         widget = QWidget(self)
         layout = QHBoxLayout()
@@ -89,7 +103,6 @@ class AtlasCollectionToolbar(QToolBar):
         self.export_textures_button = export_textures_button = QPushButton("Export Textures")
         export_textures_button.setDisabled(True)
         export_textures_button.clicked.connect(self.export_textures)
-        self.export_textures_dialog = QFileDialog(self)
 
         self.generate_atlas_button = generate_atlas_button = QPushButton("Generate Atlas")
         generate_atlas_button.setDisabled(True)
@@ -101,29 +114,16 @@ class AtlasCollectionToolbar(QToolBar):
         layout.addWidget(generate_atlas_button)
         self.addWidget(widget)
 
+        atlas_manager_handler.on_current_collection_changed.connect(self.on_current_collection_changed)
+
     def on_add_button_click(self, _):
-        file_paths = self.texture_open_dialog.getOpenFileNames(
-            self,
-            "Select the texture to add",
-            self.texture_open_dialog_open_path,
-            self.texture_open_dialog_images_filter,
-            self.texture_open_dialog_images_filter
-        )[0]
-        if len(file_paths) > 0:
-            self.add_texture_callback(file_paths)
+        self.atlas_manager_handler.add_texture_to_current_collection()
 
     def generate_atlas(self, _):
-        self.generate_atlas_callback()
+        self.atlas_manager_handler.generate_current_collection_to_atlas()
 
     def export_textures(self, _):
-        dir_path = self.export_textures_dialog.getExistingDirectory(
-            self,
-            "Select the directory to export the textures",
-            "",
-            QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks,
-        )
-        if dir_path:
-            self.export_textures_callback(dir_path)
+        self.atlas_manager_handler.export_textures_to_current_collection()
 
     def disable(self):
         self._set_disable(True)
@@ -135,3 +135,10 @@ class AtlasCollectionToolbar(QToolBar):
         self.add_button.setDisabled(state)
         self.generate_atlas_button.setDisabled(state)
         self.export_textures_button.setDisabled(state)
+
+    @Slot(AtlasCollection)
+    def on_current_collection_changed(self, collection: AtlasCollection | None):
+        if collection is None:
+            self.disable()
+        else:
+            self.enable()

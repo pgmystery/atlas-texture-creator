@@ -20,11 +20,11 @@ class CollectionCache(type(Path())):
 
         return file_path
 
-    def replace_texture(self, texture_name: str, new_texture_path: str) -> Path:
+    def replace_texture(self, texture_name: str, new_texture_path: str) -> str:
         os.remove(self / texture_name)
         new_texture_path = self.add_texture(new_texture_path)
 
-        return new_texture_path
+        return str(new_texture_path)
 
     def delete(self):
         shutil.rmtree(self)
