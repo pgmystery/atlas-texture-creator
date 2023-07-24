@@ -81,8 +81,8 @@ class TexturesView(QWidget):
             self.selected_texture.unselect()
             self.selected_texture = None
 
-    @Slot(list)
-    def add_textures(self, textures: list[AtlasTexture]):
+    @Slot(AtlasCollection, list)
+    def add_textures(self, _, textures: list[AtlasTexture]):
         for texture in textures:
             self.add_texture(texture)
 
