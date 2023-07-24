@@ -15,7 +15,7 @@ class AtlasManagerHandler(QObject):
     on_current_collection_changed = Signal(AtlasCollection)
     on_collection_created = Signal(AtlasCollection)
     on_collection_deleted = Signal(str)
-    on_textures_added = Signal(list)
+    on_textures_added = Signal(AtlasCollection, list)
 
     def __init__(self, app: QApplication, cache_dir: str):
         super().__init__(app)
@@ -83,6 +83,7 @@ class AtlasManagerHandler(QObject):
         if is_ok:
             atlas_collection = self.atlas_manager.create_collection(collection_name)
             self.on_collection_created.emit(atlas_collection)
+            self.current_collection = atlas_collection
 
             return atlas_collection
 
@@ -164,7 +165,7 @@ class AtlasManagerHandler(QObject):
                 atlas_textures.append(atlas_texture)
                 self.atlas_manager.add_texture(cache_collection.collection_name, atlas_texture)
 
-            self.on_textures_added.emit(atlas_textures)
+            self.on_textures_added.emit(collection, atlas_textures)
 
     def export_textures_to_current_collection(self):
         if self.current_collection is not None:
