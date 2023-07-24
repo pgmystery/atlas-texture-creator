@@ -8,7 +8,7 @@ from atlas_texture_creator_gui.handlers import AtlasManagerHandler
 
 class AtlasManagerToolbar(QToolBar):
     def __init__(self, atlas_manager_handler: AtlasManagerHandler):
-        super().__init__()
+        super().__init__("Atlas Toolbar")
         self.atlas_manager_handler = atlas_manager_handler
 
         create_collection_button = QPushButton("New Atlas-Collection")
@@ -16,8 +16,8 @@ class AtlasManagerToolbar(QToolBar):
         create_collection_button.clicked.connect(self.on_create_collection_button_clicked)
         self.addWidget(create_collection_button)
         self.load_combo_box = load_combo_box = QComboBox()
-        self.load_combo_box.setFixedWidth(200)
-        self.load_combo_box.currentTextChanged.connect(self.current_atlas_collection_changed)
+        load_combo_box.setFixedWidth(200)
+        self._load_combo_box_changed_connected = False
         self.addWidget(load_combo_box)
         self.delete_collection_button = QPushButton("Delete Atlas-Collection")
         self.delete_collection_button.clicked.connect(self.delete_atlas_collection)
@@ -25,6 +25,7 @@ class AtlasManagerToolbar(QToolBar):
         layout = self.layout()
         layout.setSpacing(10)
 
+        atlas_manager_handler.on_current_collection_changed.connect(self.on_collection_changed)
         atlas_manager_handler.on_collection_created.connect(self.on_collection_created)
         atlas_manager_handler.on_load_collections.connect(self.load_atlas_collections)
         atlas_manager_handler.on_collection_deleted.connect(self.on_collection_deleted)
@@ -36,11 +37,11 @@ class AtlasManagerToolbar(QToolBar):
         if collection_name == "":
             return
 
-        self.atlas_manager_handler.current_collection = collection_name
+        if self.atlas_manager_handler.current_collection is not None \
+        and self.atlas_manager_handler.current_collection.name == collection_name:
+            return
 
-        print(self.atlas_manager_handler.current_collection.textures())
-        # if len(self.atlas_manager_handler.current_collection.textures()) == 0:
-        #     pass
+        self.atlas_manager_handler.current_collection = collection_name
 
     def set_current_atlas_collection(self, collection_name: str):
         index = self.load_combo_box.findText(collection_name)
@@ -52,6 +53,11 @@ class AtlasManagerToolbar(QToolBar):
 
         for collection in collections:
             self.load_combo_box.addItem(collection.name)
+        self.load_combo_box.setCurrentIndex(-1)
+
+        if not self._load_combo_box_changed_connected:
+            self._load_combo_box_changed_connected = True
+            self.load_combo_box.currentTextChanged.connect(self.current_atlas_collection_changed)
 
         self.refresh_interface()
 
@@ -82,10 +88,17 @@ class AtlasManagerToolbar(QToolBar):
             self.load_combo_box.removeItem(item_index)
             self.refresh_interface()
 
+    @Slot(AtlasCollection)
+    def on_collection_changed(self, collection: AtlasCollection):
+        if collection is not None:
+            collection_name = collection.name
+            if collection_name != self.load_combo_box.currentText():
+                self.set_current_atlas_collection(collection_name)
+
 
 class AtlasCollectionToolbar(QToolBar):
     def __init__(self, atlas_manager_handler: AtlasManagerHandler):
-        super().__init__()
+        super().__init__("Collection Toolbar")
         self.atlas_manager_handler = atlas_manager_handler
         self.save_atlas_dialog = QFileDialog(self)
         widget = QWidget(self)
@@ -115,6 +128,7 @@ class AtlasCollectionToolbar(QToolBar):
         self.addWidget(widget)
 
         atlas_manager_handler.on_current_collection_changed.connect(self.on_current_collection_changed)
+        atlas_manager_handler.on_textures_added.connect(self.check_collection_length)
 
     def on_add_button_click(self, _):
         self.atlas_manager_handler.add_texture_to_current_collection()
@@ -142,3 +156,18 @@ class AtlasCollectionToolbar(QToolBar):
             self.disable()
         else:
             self.enable()
+            self.check_collection_length(collection)
+
+    @Slot(AtlasCollection)
+    def check_collection_length(self, collection: AtlasCollection):
+        if collection is None:
+            self.generate_atlas_button.setDisabled(True)
+            self.export_textures_button.setDisabled(True)
+            return
+
+        if len(collection) == 0:
+            self.generate_atlas_button.setDisabled(True)
+            self.export_textures_button.setDisabled(True)
+        else:
+            self.generate_atlas_button.setDisabled(False)
+            self.export_textures_button.setDisabled(False)
