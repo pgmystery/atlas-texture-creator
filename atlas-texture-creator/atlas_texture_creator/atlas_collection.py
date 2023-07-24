@@ -251,6 +251,9 @@ class AtlasCollection:
 
         return atlas, textures_coord
 
+    def __len__(self):
+        return len(self.texture_store)
+
 
 class AtlasGrid:
     def __init__(self, direction: AtlasGridDirection):
