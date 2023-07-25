@@ -156,6 +156,8 @@ class MainWindowMenubar:
         self.atlas_manager_handler.on_current_collection_changed.connect(self.load_collections)
         self.atlas_manager_handler.on_current_collection_changed.connect(self.current_collection_changed)
         self.atlas_manager_handler.on_collection_created.connect(self.load_collections)
+        self.atlas_manager_handler.on_collection_deleted.connect(self.load_collections)
+        self.atlas_manager_handler.on_textures_added.connect(self.on_textures_added)
 
     @Slot(AtlasCollection)
     def current_collection_changed(self, collection: AtlasCollection | None):
@@ -166,9 +168,13 @@ class MainWindowMenubar:
             self.menu_bar.menu.textures.export_textures.setDisabled(True)
         if collection is not None:
             self.menu_bar.menu.atlas.delete_atlas_collection.setDisabled(False)
-            self.menu_bar.menu.atlas.generate_atlas.setDisabled(False)
             self.menu_bar.menu.textures.add_texture.setDisabled(False)
-            self.menu_bar.menu.textures.export_textures.setDisabled(False)
+            if len(collection) == 0:
+                self.menu_bar.menu.atlas.generate_atlas.setDisabled(True)
+                self.menu_bar.menu.textures.export_textures.setDisabled(True)
+            else:
+                self.menu_bar.menu.atlas.generate_atlas.setDisabled(False)
+                self.menu_bar.menu.textures.export_textures.setDisabled(False)
 
     @Slot()
     def load_collections(self):
@@ -200,3 +206,9 @@ class MainWindowMenubar:
 
         self.menu_bar.menu.file.load_collection.set_menu(collection_menu)
         self.menu_bar.update()
+
+    @Slot(AtlasCollection)
+    def on_textures_added(self, collection: AtlasCollection):
+        if len(collection) > 0:
+            self.menu_bar.menu.atlas.generate_atlas.setDisabled(False)
+            self.menu_bar.menu.textures.export_textures.setDisabled(False)

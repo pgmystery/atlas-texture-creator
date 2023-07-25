@@ -41,6 +41,7 @@ class MenuBarSubMenu(QMenu):
 
     def set_menu(self, menu: MenuBarMenuType):
         self._menu = menu
+        self.clear()
 
         for item_name, item in menu.items():
             setattr(self, item_name, item)
@@ -78,6 +79,14 @@ class MenuBar(Generic[MenuBarMenuTypeGeneric]):
         for menu_item in sub_menu.values():
             if isinstance(menu_item, MenuBarSubMenu):
                 self._create_menu(menu_item, menu_item.menu)
+
+                # "FIX" Bug: If the menu is empty and the user tries to see the menu,
+                #            after that, adding actions not working and the menu is still empty...
+                if menu_item.isEmpty():
+                    menu_item.setDisabled(True)
+                else:
+                    menu_item.setDisabled(False)
+
                 menu.addMenu(menu_item)
 
             elif isinstance(menu_item, MenuBarAction):
