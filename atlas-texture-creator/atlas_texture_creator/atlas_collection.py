@@ -1,10 +1,18 @@
 import math
-from typing import Dict
+from typing import Dict, Literal
 
 from PIL import Image
 from pydantic import BaseModel
 
-from .atlas_texture import AtlasTexture
+from atlas_texture_creator.atlas_texture import AtlasTexture
+
+
+AtlasGridDirection = Literal["row", "column"]
+
+
+class AtlasGridItem(BaseModel):
+    column: int
+    row: int
 
 
 class GenerateAtlasOptionsSize(BaseModel):
@@ -44,84 +52,141 @@ class GenerateAtlasTextureCoords:
         return GenerateAtlasReturnTypeOut.parse_obj(self.data).json()
 
 
+class AtlasCollectionTextureStore:
+    def __init__(self, grid_direction: AtlasGridDirection = "row"):
+        self._textures: list[list[AtlasTexture]] = []
+        self.grid = AtlasGrid(direction=grid_direction)
+
+        # 1 = self._textures[0][0] = [[1]]  # new array
+        # 2 = self._textures[0][1] = [[1, 2]]
+        # 3 = self._textures[1][0] = [[1, 2], [3]]  # new array
+        # 4 = self._textures[1][1] = [[1, 2], [3, 4]]
+        # 5 = self._textures[0][2] = [[1, 2, 5], [3, 4]]
+        # 6 = self._textures[2][0] = [[1, 2, 5], [3, 4], [6]]  # new array
+        # 7 = self._textures[1][2] = [[1, 2, 5], [3, 4, 7], [6]]
+        # 8 = self._textures[2][1] = [[1, 2, 5], [3, 4, 7], [6, 8]]
+        # 9 = self._textures[2][2] = [[1, 2, 5], [3, 4, 7], [6, 8, 9]]
+        # 10 = self._textures[0][3] = [[1, 2, 5, 10], [3, 4, 7], [6, 8, 9]]
+        # 11 = self._textures[3][0] = [[1, 2, 5, 10], [3, 4, 7], [6, 8, 9], [11]]  # new array
+        # 12 = self._textures[1][3] = [[1, 2, 5, 10], [3, 4, 7, 12], [6, 8, 9], [11]]
+        # 13 = self._textures[3][1] = [[1, 2, 5, 10], [3, 4, 7, 12], [6, 8, 9], [11, 13]]
+        # 14 = self._textures[2][3] = [[1, 2, 5, 10], [3, 4, 7, 12], [6, 8, 9, 14], [11, 13]]
+        # 15 = self._textures[3][2] = [[1, 2, 5, 10], [3, 4, 7, 12], [6, 8, 9, 14], [11, 13, 15]]
+        # 16 = self._textures[3][3] = [[1, 2, 5, 10], [3, 4, 7, 12], [6, 8, 9, 14], [11, 13, 15, 16]]
+        # 17 = self._textures[0][4] = [[1, 2, 5, 10, 17], [3, 4, 7, 12], [6, 8, 9, 14], [11, 13, 15, 16]]
+        # 18 = self._textures[4][0] = [[1, 2, 5, 10, 17], [3, 4, 7, 12], [6, 8, 9, 14], [11, 13, 15, 16], [18]]  # new array
+        # self._textures[self.row_counter][self.column_counter]
+        # arrays = row; numbers in array = column
+        # column = 0 = new array
+
+    def add(self, texture: AtlasTexture):
+        id = len(self.grid)
+        texture.id = id
+        grid_item = self.grid.add()
+        self._store_texture(texture, column=grid_item.column, row=grid_item.row)
+
+    def replace(self, texture: AtlasTexture, row: int, column: int):
+        self._textures[column][row] = texture
+
+    def _store_texture(self, texture: AtlasTexture, row: int, column: int):
+        texture.set_coord(column=column, row=row)
+
+        if len(self._textures) == column:
+            self._textures.append([])
+
+        self._textures[column].append(texture)
+
+    def get(self, row: int, column: int):
+        return self._textures[column][row]
+
+    def column(self, column: int):
+        return self._textures[column]
+
+    def row(self, row: int):
+        row_list = []
+
+        for column in self._textures:
+            texture = column[row]
+            row_list.append(texture)
+
+        return row_list
+
+    def __iter__(self):
+        # COLUMNS
+        for column in self._textures:
+            for item in column:
+                yield item
+
+        # ROWS: # TODO: NOT WORKING
+        # counter = 0
+        # all_items_yield = False
+        # while not all_items_yield:
+        #     for row in self._textures:
+        #         try:
+        #             yield row[counter]
+        #         except IndexError:
+        #             all_items_yield = True
+        #             break
+        #     counter += 1
+
+        # square_number = math.ceil(math.sqrt(self._store_length))
+        #
+        # for column in range(square_number):
+        #     for row in range(square_number):
+        #         try:
+        #             yield self.get(row=row, column=column)
+        #         except IndexError:
+        #             break
+
+    def __getitem__(self, item):
+        return self._textures[item]
+
+    def __len__(self):
+        return len(self.grid)
+
+    def _coord_flip(self):
+        self._add_to_column = 0 if self._add_to_column == 1 else 1
+
+    def _reset_add_to_column(self):
+        self._add_to_column = 0
+
+
 class AtlasCollection:
     def __init__(self, name: str):
         super().__init__()
         self.name = name
         self.texture_id = 1
-        self._add_to_column = 0
-        self.row_coords = AtlasCoord()
-        self.column_coords = AtlasCoord()
-        self.collection_length = 0
-        self.collection: list[list[AtlasTexture]] = []
-        # 1 = self.collection[0][0] = [[1]]  # new array
-        # 2 = self.collection[0][1] = [[1, 2]]
-        # 3 = self.collection[1][0] = [[1, 2], [3]]  # new array
-        # 4 = self.collection[1][1] = [[1, 2], [3, 4]]
-        # 5 = self.collection[0][2] = [[1, 2, 5], [3, 4]]
-        # 6 = self.collection[2][0] = [[1, 2, 5], [3, 4], [6]]  # new array
-        # 7 = self.collection[1][2] = [[1, 2, 5], [3, 4, 7], [6]]
-        # 8 = self.collection[2][1] = [[1, 2, 5], [3, 4, 7], [6, 8]]
-        # 9 = self.collection[2][2] = [[1, 2, 5], [3, 4, 7], [6, 8, 9]]
-        # 10 = self.collection[0][3] = [[1, 2, 5, 10], [3, 4, 7], [6, 8, 9]]
-        # 11 = self.collection[3][0] = [[1, 2, 5, 10], [3, 4, 7], [6, 8, 9], [11]]  # new array
-        # 12 = self.collection[1][3] = [[1, 2, 5, 10], [3, 4, 7, 12], [6, 8, 9], [11]]
-        # 13 = self.collection[3][1] = [[1, 2, 5, 10], [3, 4, 7, 12], [6, 8, 9], [11, 13]]
-        # 14 = self.collection[2][3] = [[1, 2, 5, 10], [3, 4, 7, 12], [6, 8, 9, 14], [11, 13]]
-        # 15 = self.collection[3][2] = [[1, 2, 5, 10], [3, 4, 7, 12], [6, 8, 9, 14], [11, 13, 15]]
-        # 16 = self.collection[3][3] = [[1, 2, 5, 10], [3, 4, 7, 12], [6, 8, 9, 14], [11, 13, 15, 16]]
-        # 17 = self.collection[0][4] = [[1, 2, 5, 10, 17], [3, 4, 7, 12], [6, 8, 9, 14], [11, 13, 15, 16]]
-        # 18 = self.collection[4][0] = [[1, 2, 5, 10, 17], [3, 4, 7, 12], [6, 8, 9, 14], [11, 13, 15, 16], [18]]  # new array
-        # self.collection[self.row_counter][self.column_counter]
-        # arrays = row; numbers in array = column
-        # column = 0 = new array
+        self.texture_store = AtlasCollectionTextureStore()
 
     def add_texture(self, texture_path: str, label: str) -> AtlasTexture:
         atlas_texture = AtlasTexture(self.texture_id, texture_path, label)
-        self._add_texture(atlas_texture)
+        self.texture_store.add(atlas_texture)
         return atlas_texture
 
     def load_texture(self, texture: AtlasTexture):
-        self._add_texture(texture)
+        self.texture_store.add(texture)
 
     def load_textures(self, textures: list[AtlasTexture]):
         for texture in textures:
             self.load_texture(texture)
 
     def get_texture(self, row: int, column: int) -> AtlasTexture:
-        return self.collection[row][column]
+        return self.texture_store.get(row=row, column=column)
 
-    # Not very efficient...
-    def textures(self):
-        square_number = math.ceil(math.sqrt(self.collection_length))
-
-        # current_row = 0
-        # current_column = 0
-        # textures_length_sqrt = math.sqrt(self.collection_length)
-        # textures_length_floor_sqrt = math.floor(textures_length_sqrt)
-        # max_row = textures_length_floor_sqrt
-        # max_column = textures_length_floor_sqrt
-        # offset_number = (self.collection_length - (max_row * max_column)) / 2.0
-        # row_offset = math.floor(offset_number)
-        # column_offset = math.floor(offset_number) if offset_number.is_integer() else math.ceil(offset_number)
-
-        for column in range(square_number):
-            for row in range(square_number):
-                try:
-                    yield self.collection[column][row]
-                except IndexError:
-                    break
+    def textures(self) -> AtlasCollectionTextureStore:
+        return self.texture_store
 
     def replace_texture(self, new_texture: AtlasTexture):
         column = new_texture.column
         row = new_texture.row
-        self.collection[column][row] = new_texture
+
+        self.texture_store.replace(new_texture, row=row, column=column)
 
     def generate_atlas(self, options: GenerateAtlasOptions = None) -> tuple[Image.Image, GenerateAtlasTextureCoords]:
         textures_coord = GenerateAtlasTextureCoords()
         atlas_width = 0
         atlas_height = 0
-        square_number = math.ceil(math.sqrt(self.collection_length))
+        square_number = math.ceil(math.sqrt(len(self.texture_store)))
         lock_texture_width = None
         lock_texture_height = None
 
@@ -138,7 +203,7 @@ class AtlasCollection:
 
             for column in range(square_number):
                 try:
-                    texture = self.collection[row][column]
+                    texture = self.texture_store.get(row=row, column=column)
                 except IndexError:
                     continue
                 img = Image.open(texture.img_path)
@@ -186,66 +251,68 @@ class AtlasCollection:
 
         return atlas, textures_coord
 
-    def _add_texture(self, atlas_texture: AtlasTexture):
-        atlas_length = math.sqrt(self.collection_length + 1)
-        current_offset = math.floor(atlas_length)
-        self.texture_id += 1
+    def __len__(self):
+        return len(self.texture_store)
 
-        # 0, 0
-        if self.collection_length == 0:
-            atlas_texture.set_coord(0, 0)
-            self.collection.append([atlas_texture])
-            self.collection_length += 1
-            print(atlas_texture.get_coord())
-            return
+    def __iter__(self):
+        for texture in self.textures():
+            yield texture
 
-        if atlas_length.is_integer():
-            self.row_coords.next()
-            self.column_coords.next()
-            atlas_length_index = int(atlas_length) - 1
-            atlas_texture.set_coord(atlas_length_index, len(self.collection[atlas_length_index]))
-            self.collection[atlas_length_index].append(atlas_texture)
-            self._reset_add_to_column()
-            self.collection_length += 1
-            print(atlas_texture.get_coord())
-            return
 
-        if self._add_to_column == 0:
-            # add to column
-            atlas_texture.set_coord(self.column_coords.offset, len(self.collection[self.column_coords.offset]))
-            self.collection[self.column_coords.offset].append(atlas_texture)
-            self.column_coords.step()
+class AtlasGrid:
+    def __init__(self, direction: AtlasGridDirection):
+        self.direction = direction
+        self.squares = 0
+        self.column = 0
+        self.row = 0
+        self.offset = 0
+
+    def add(self) -> AtlasGridItem:
+        if self._calc_square():
+            row = column = self.squares
+
+            self._set_next_square()
         else:
-            if self.row_coords.offset == 0:
-                # add array
-                atlas_texture.set_coord(len(self.collection), 0)
-                self.collection.append([atlas_texture])
-            else:
-                atlas_texture.set_coord(current_offset, len(self.collection[current_offset]))
-                self.collection[current_offset].append(atlas_texture)
-            self.row_coords.step()
-        self.collection_length += 1
-        self._coord_flip()
-        print(atlas_texture.get_coord())
+            row = column = self.offset
 
-    def _coord_flip(self):
-        self._add_to_column = 0 if self._add_to_column == 1 else 1
+            if self.direction == "row":
+                if self.column == self.row:
+                    self.row += 1
+                    row = self.squares
+                elif self.column < self.row:
+                    self.column += 1
+                    column = self.squares
+                    self.offset += 1
+            elif self.direction == "column":
+                if self.column == self.row:
+                    self.column += 1
+                    column = self.squares
+                elif self.row < self.column:
+                    self.row += 1
+                    row = self.squares
+                    self.offset += 1
 
-    def _reset_add_to_column(self):
-        self._add_to_column = 0
+        item = AtlasGridItem(
+            column=column,
+            row=row,
+        )
 
+        return item
 
-class AtlasCoord:
-    def __init__(self):
-        self.index = 0
+    def _calc_square(self) -> bool:
+        l = len(self) + 1
+        l_sqrt = math.sqrt(l)
+        is_integer = l_sqrt.is_integer()
+
+        return is_integer
+
+    def _set_next_square(self):
+        self.squares += 1
         self.offset = 0
+        self.row = 0
+        self.column = 0
 
-    def reset(self):
-        self.offset = 0
+    def __len__(self):
+        length = (self.squares * self.squares) + self.row + self.column
 
-    def step(self):
-        self.offset += 1
-
-    def next(self):
-        self.index += 1
-        self.reset()
+        return length

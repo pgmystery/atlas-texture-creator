@@ -4,7 +4,7 @@ from .types import AtlasManagerConfigType
 
 
 class AtlasManager(AtlasStore):
-    def __init__(self, config_path: str):
+    def __init__(self, config_path: str = ""):
         super().__init__()
         # self.store = AtlasStore()
         # self.load_settings(config_path)

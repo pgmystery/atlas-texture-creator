@@ -1,84 +1,105 @@
-from typing import Callable
-
-from PySide6.QtWidgets import QToolBar, QPushButton, QComboBox, QInputDialog, QSpacerItem, QSizePolicy, QWidget, \
-    QHBoxLayout, QFileDialog
+from PySide6.QtCore import Slot
+from PySide6.QtWidgets import QToolBar, QPushButton, QComboBox, QSpacerItem, QSizePolicy, QWidget, QHBoxLayout, \
+    QFileDialog
 
 from atlas_texture_creator import AtlasCollection
+from atlas_texture_creator_gui.handlers import AtlasManagerHandler
 
 
 class AtlasManagerToolbar(QToolBar):
-    def __init__(
-        self,
-        new_atlas_collection_callback: Callable[[str], None],
-        delete_atlas_collection_callback: Callable[[str], None],
-        on_atlas_collection_changed: Callable[[str], None],
-    ):
-        super().__init__()
-        self.new_atlas_collection_callback = new_atlas_collection_callback
-        self.delete_atlas_collection_callback = delete_atlas_collection_callback
-        self.on_atlas_collection_changed = on_atlas_collection_changed
-        new_button = QPushButton("New Atlas-Collection")
-        new_button.setStatusTip("Create a new atlas-collection")
-        new_button.clicked.connect(self.on_new_button_click)
-        self.addWidget(new_button)
+    def __init__(self, atlas_manager_handler: AtlasManagerHandler):
+        super().__init__("Atlas Toolbar")
+        self.atlas_manager_handler = atlas_manager_handler
+
+        create_collection_button = QPushButton("New Atlas-Collection")
+        create_collection_button.setStatusTip("Create a new atlas-collection")
+        create_collection_button.clicked.connect(self.on_create_collection_button_clicked)
+        self.addWidget(create_collection_button)
         self.load_combo_box = load_combo_box = QComboBox()
-        self.load_combo_box.setFixedWidth(200)
-        self.load_combo_box.currentTextChanged.connect(self.current_atlas_collection_changed)
+        load_combo_box.setFixedWidth(200)
+        self._load_combo_box_changed_connected = False
         self.addWidget(load_combo_box)
-        self.delete_button = QPushButton("Delete Atlas-Collection")
-        self.delete_button.clicked.connect(self.delete_atlas_collection)
-        self.addWidget(self.delete_button)
+        self.delete_collection_button = QPushButton("Delete Atlas-Collection")
+        self.delete_collection_button.clicked.connect(self.delete_atlas_collection)
+        self.addWidget(self.delete_collection_button)
         layout = self.layout()
         layout.setSpacing(10)
 
-    def on_new_button_click(self, _):
-        new_atlas_collection_name, is_ok = QInputDialog.getText(
-            self,
-            "Create Atlas-Collection",
-            "Enter your new Atlas-Collection name"
-        )
+        atlas_manager_handler.on_current_collection_changed.connect(self.on_collection_changed)
+        atlas_manager_handler.on_collection_created.connect(self.on_collection_created)
+        atlas_manager_handler.on_load_collections.connect(self.load_atlas_collections)
+        atlas_manager_handler.on_collection_deleted.connect(self.on_collection_deleted)
 
-        if is_ok:
-            self.new_atlas_collection_callback(new_atlas_collection_name)
+    def on_create_collection_button_clicked(self, _):
+        self.atlas_manager_handler.create_collection()
 
-    def current_atlas_collection_changed(self, new_atlas_collection_name):
-        self.on_atlas_collection_changed(new_atlas_collection_name)
+    def current_atlas_collection_changed(self, collection_name: str):
+        if collection_name == "":
+            return
+
+        if self.atlas_manager_handler.current_collection is not None \
+        and self.atlas_manager_handler.current_collection.name == collection_name:
+            return
+
+        self.atlas_manager_handler.current_collection = collection_name
 
     def set_current_atlas_collection(self, collection_name: str):
         index = self.load_combo_box.findText(collection_name)
         self.load_combo_box.setCurrentIndex(index)
 
-    def load_atlas_collections(self, collections: list[AtlasCollection]):
+    @Slot(list)
+    def load_atlas_collections(self, collections: list[str]):
         self.load_combo_box.clear()
+
+        for collection_name in collections:
+            self.load_combo_box.addItem(collection_name)
+        self.load_combo_box.setCurrentIndex(-1)
+
+        if not self._load_combo_box_changed_connected:
+            self._load_combo_box_changed_connected = True
+            self.load_combo_box.currentTextChanged.connect(self.current_atlas_collection_changed)
+
+        self.refresh_interface()
+
+    @Slot(AtlasCollection)
+    def on_collection_created(self, collection: AtlasCollection):
+        self.load_combo_box.addItem(collection.name)
+        self.refresh_interface()
+
+    def refresh_interface(self):
+        collections = [self.load_combo_box.itemText(i) for i in range(self.load_combo_box.count())]
+
         if len(collections) == 0:
             self.load_combo_box.setDisabled(True)
-            self.delete_button.setDisabled(True)
+            self.delete_collection_button.setDisabled(True)
         else:
             self.load_combo_box.setDisabled(False)
-            self.delete_button.setDisabled(False)
-            for collection in collections:
-                self.load_combo_box.addItem(collection.name)
+            self.delete_collection_button.setDisabled(False)
 
     def delete_atlas_collection(self, _):
         collection_name = self.load_combo_box.currentText()
-        self.delete_atlas_collection_callback(collection_name)
+        self.atlas_manager_handler.delete_collection(collection_name)
+
+    @Slot(str)
+    def on_collection_deleted(self, collection_name: str):
+        item_index = self.load_combo_box.findText(collection_name)
+
+        if item_index >= 0:
+            self.load_combo_box.removeItem(item_index)
+            self.refresh_interface()
+
+    @Slot(AtlasCollection)
+    def on_collection_changed(self, collection: AtlasCollection):
+        if collection is not None:
+            collection_name = collection.name
+            if collection_name != self.load_combo_box.currentText():
+                self.set_current_atlas_collection(collection_name)
 
 
 class AtlasCollectionToolbar(QToolBar):
-    def __init__(
-        self,
-        add_texture_callback: Callable[[list[str]], None],
-        generate_atlas_callback: Callable,
-        export_textures_callback: Callable[[str], None],
-        open_path: str,
-    ):
-        super().__init__()
-        self.add_texture_callback = add_texture_callback
-        self.generate_atlas_callback = generate_atlas_callback
-        self.export_textures_callback = export_textures_callback
-        self.texture_open_dialog = QFileDialog(self)
-        self.texture_open_dialog_images_filter = "Images (*.png *.jpg)"
-        self.texture_open_dialog_open_path = open_path
+    def __init__(self, atlas_manager_handler: AtlasManagerHandler):
+        super().__init__("Collection Toolbar")
+        self.atlas_manager_handler = atlas_manager_handler
         self.save_atlas_dialog = QFileDialog(self)
         widget = QWidget(self)
         layout = QHBoxLayout()
@@ -95,7 +116,6 @@ class AtlasCollectionToolbar(QToolBar):
         self.export_textures_button = export_textures_button = QPushButton("Export Textures")
         export_textures_button.setDisabled(True)
         export_textures_button.clicked.connect(self.export_textures)
-        self.export_textures_dialog = QFileDialog(self)
 
         self.generate_atlas_button = generate_atlas_button = QPushButton("Generate Atlas")
         generate_atlas_button.setDisabled(True)
@@ -107,29 +127,17 @@ class AtlasCollectionToolbar(QToolBar):
         layout.addWidget(generate_atlas_button)
         self.addWidget(widget)
 
+        atlas_manager_handler.on_current_collection_changed.connect(self.on_current_collection_changed)
+        atlas_manager_handler.on_textures_added.connect(self.check_collection_length)
+
     def on_add_button_click(self, _):
-        file_paths = self.texture_open_dialog.getOpenFileNames(
-            self,
-            "Select the texture to add",
-            self.texture_open_dialog_open_path,
-            self.texture_open_dialog_images_filter,
-            self.texture_open_dialog_images_filter
-        )[0]
-        if len(file_paths) > 0:
-            self.add_texture_callback(file_paths)
+        self.atlas_manager_handler.add_texture_to_current_collection()
 
     def generate_atlas(self, _):
-        self.generate_atlas_callback()
+        self.atlas_manager_handler.generate_current_collection_to_atlas()
 
     def export_textures(self, _):
-        dir_path = self.export_textures_dialog.getExistingDirectory(
-            self,
-            "Select the directory to export the textures",
-            "",
-            QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks,
-        )
-        if dir_path:
-            self.export_textures_callback(dir_path)
+        self.atlas_manager_handler.export_textures_to_current_collection()
 
     def disable(self):
         self._set_disable(True)
@@ -141,3 +149,25 @@ class AtlasCollectionToolbar(QToolBar):
         self.add_button.setDisabled(state)
         self.generate_atlas_button.setDisabled(state)
         self.export_textures_button.setDisabled(state)
+
+    @Slot(AtlasCollection)
+    def on_current_collection_changed(self, collection: AtlasCollection | None):
+        if collection is None:
+            self.disable()
+        else:
+            self.enable()
+            self.check_collection_length(collection)
+
+    @Slot(AtlasCollection)
+    def check_collection_length(self, collection: AtlasCollection):
+        if collection is None:
+            self.generate_atlas_button.setDisabled(True)
+            self.export_textures_button.setDisabled(True)
+            return
+
+        if len(collection) == 0:
+            self.generate_atlas_button.setDisabled(True)
+            self.export_textures_button.setDisabled(True)
+        else:
+            self.generate_atlas_button.setDisabled(False)
+            self.export_textures_button.setDisabled(False)

@@ -1,18 +1,17 @@
-from typing import Callable
-
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QScrollArea, QGridLayout, QWidget, QHBoxLayout
 
 from atlas_texture_creator import AtlasCollection
 from .TextureViewImage import TextureViewImage
 from .TextureViewImageInfo import TextureViewImageInfo
 from atlas_texture_creator.atlas_texture import AtlasTexture
+from atlas_texture_creator_gui.handlers import AtlasManagerHandler
 
 
 class TexturesView(QWidget):
-    def __init__(self, replace_texture_callback: Callable[[AtlasTexture], None]):
+    def __init__(self, atlas_manager_handler: AtlasManagerHandler, atlas_collection: AtlasCollection = None):
         super().__init__()
-        self._replace_texture_callback = replace_texture_callback
+        self.atlas_manager_handler = atlas_manager_handler
         self.selected_texture = None
         self.layout = layout = QHBoxLayout()
         layout.setSpacing(0)
@@ -33,6 +32,30 @@ class TexturesView(QWidget):
         self.tvii = TextureViewImageInfo(self.close_texture_info, self.on_texture_save)
         layout.addWidget(self.tvii)
 
+        self.atlas_collection = atlas_collection
+        atlas_manager_handler.on_current_collection_changed.connect(self.on_atlas_collection_changed)
+        atlas_manager_handler.on_textures_added.connect(self.add_textures)
+
+    def load_collection(self, atlas_collection: AtlasCollection = None):
+        self.atlas_collection = atlas_collection
+
+    @property
+    def atlas_collection(self):
+        return self._atlas_collection
+
+    @atlas_collection.setter
+    def atlas_collection(self, atlas_collection: AtlasCollection = None):
+        self._atlas_collection = atlas_collection
+
+        if atlas_collection is None:
+            self.clear()
+        else:
+            self.load_textures(atlas_collection)
+
+    @Slot(AtlasCollection)
+    def on_atlas_collection_changed(self, collection: AtlasCollection):
+        self.atlas_collection = collection
+
     def on_texture_click(self, tvi: TextureViewImage):
         if self.selected_texture != tvi:
             if self.selected_texture:
@@ -42,7 +65,8 @@ class TexturesView(QWidget):
             self.tvii.load_tvi_info(tvi)
 
     def on_texture_save(self, new_texture: AtlasTexture):
-        self._replace_texture_callback(new_texture)
+        self.atlas_manager_handler.replace_texture_of_collection(self._atlas_collection, new_texture)
+        self.load_textures(self._atlas_collection)
 
     def keyPressEvent(self, event):
         super().keyPressEvent(event)
@@ -54,6 +78,11 @@ class TexturesView(QWidget):
         if self.selected_texture:
             self.selected_texture.unselect()
             self.selected_texture = None
+
+    @Slot(AtlasCollection, list)
+    def add_textures(self, _, textures: list[AtlasTexture]):
+        for texture in textures:
+            self.add_texture(texture)
 
     def add_texture(self, texture: AtlasTexture):
         x = texture.row
@@ -68,8 +97,8 @@ class TexturesView(QWidget):
 
     def load_textures(self, collection: AtlasCollection):
         self.clear()
-        for texture in collection.textures():
-            print(f"id: {str(texture.id)}", f"column: {str(texture.column)}", f"row: {str(texture.row)}")
+
+        for texture in collection:
             self.add_texture(texture)
 
     def clear(self):
