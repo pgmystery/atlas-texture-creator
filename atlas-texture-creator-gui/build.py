@@ -9,6 +9,9 @@ def build():
     if not os.path.exists(dist_path):
         os.makedirs(dist_path)
 
+    resource_path = os.path.join("atlas_texture_creator_gui", "resources")
+    resource_path_images = os.path.join(resource_path, "images", "*")
+    resource_path_icon = os.path.join(resource_path, "icons", "atlas_texture_creator.ico")
 
     PyInstaller.__main__.run([
         "--name",
@@ -20,6 +23,8 @@ def build():
         "run.py",
         "--clean",
         "--debug=all",
+        f"--icon={resource_path_icon}",
+        f"--add-data={resource_path_images}{os.pathsep}images/",
     ])
 
 
