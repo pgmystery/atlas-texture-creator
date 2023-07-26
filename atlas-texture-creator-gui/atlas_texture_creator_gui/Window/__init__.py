@@ -1,1 +1,2 @@
-from .MainWindow import MainWindow
+from atlas_texture_creator_gui.Window.MainWindow import MainWindow
+from atlas_texture_creator_gui.Window.AboutWindow import AboutWindow
