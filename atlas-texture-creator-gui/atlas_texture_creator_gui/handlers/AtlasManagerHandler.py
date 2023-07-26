@@ -70,7 +70,6 @@ class AtlasManagerHandler(QObject):
         else:
             raise TypeError("Bad collection type")
 
-        print(f"SET CURRENT COLLECTION: {collection.name if collection is not None else 'NONE'}")
         self.on_current_collection_changed.emit(collection)
 
     def create_collection(self) -> AtlasCollection | None:

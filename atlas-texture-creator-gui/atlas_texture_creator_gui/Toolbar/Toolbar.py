@@ -48,11 +48,11 @@ class AtlasManagerToolbar(QToolBar):
         self.load_combo_box.setCurrentIndex(index)
 
     @Slot(list)
-    def load_atlas_collections(self, collections: list[AtlasCollection]):
+    def load_atlas_collections(self, collections: list[str]):
         self.load_combo_box.clear()
 
-        for collection in collections:
-            self.load_combo_box.addItem(collection.name)
+        for collection_name in collections:
+            self.load_combo_box.addItem(collection_name)
         self.load_combo_box.setCurrentIndex(-1)
 
         if not self._load_combo_box_changed_connected:

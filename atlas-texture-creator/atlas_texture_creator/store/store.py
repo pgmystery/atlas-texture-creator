@@ -38,16 +38,14 @@ class AtlasStore:
             session.delete(collection_model)
             session.commit()
 
-    def list_collections(self) -> list[AtlasCollection]:
-        atlas_collections: list[AtlasCollection] = []
+    def list_collections(self) -> list[str]:
+        atlas_collections: list[str] = []
 
         with Session(self.engine) as session:
             statement = select(AtlasCollectionModel)
             atlas_collection_models = session.exec(statement)
             for atlas_collection_model in atlas_collection_models:
-                collection_name = atlas_collection_model.name
-                atlas_collection = AtlasCollection(collection_name)
-                atlas_collections.append(atlas_collection)
+                atlas_collections.append(atlas_collection_model.name)
 
         return atlas_collections
 

@@ -191,8 +191,7 @@ class MainWindowMenubar:
         collections = self.atlas_manager_handler.collections()
         current_collection = self.atlas_manager_handler.current_collection
 
-        for collection in collections:
-            collection_name = collection.name
+        for collection_name in collections:
             action = MenuBarAction(
                 label=collection_name,
                 action=LoadCollection(collection_name),

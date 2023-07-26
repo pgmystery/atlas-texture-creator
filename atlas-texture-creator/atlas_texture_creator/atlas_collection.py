@@ -86,7 +86,7 @@ class AtlasCollectionTextureStore:
         self._store_texture(texture, column=grid_item.column, row=grid_item.row)
 
     def replace(self, texture: AtlasTexture, row: int, column: int):
-        pass
+        self._textures[column][row] = texture
 
     def _store_texture(self, texture: AtlasTexture, row: int, column: int):
         texture.set_coord(column=column, row=row)
@@ -160,7 +160,6 @@ class AtlasCollection:
 
     def add_texture(self, texture_path: str, label: str) -> AtlasTexture:
         atlas_texture = AtlasTexture(self.texture_id, texture_path, label)
-        # self._add_texture(atlas_texture)
         self.texture_store.add(atlas_texture)
         return atlas_texture
 
@@ -180,6 +179,7 @@ class AtlasCollection:
     def replace_texture(self, new_texture: AtlasTexture):
         column = new_texture.column
         row = new_texture.row
+
         self.texture_store.replace(new_texture, row=row, column=column)
 
     def generate_atlas(self, options: GenerateAtlasOptions = None) -> tuple[Image.Image, GenerateAtlasTextureCoords]:
@@ -253,6 +253,10 @@ class AtlasCollection:
 
     def __len__(self):
         return len(self.texture_store)
+
+    def __iter__(self):
+        for texture in self.textures():
+            yield texture
 
 
 class AtlasGrid:

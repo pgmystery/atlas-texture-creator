@@ -36,8 +36,6 @@ class TexturesView(QWidget):
         atlas_manager_handler.on_current_collection_changed.connect(self.on_atlas_collection_changed)
         atlas_manager_handler.on_textures_added.connect(self.add_textures)
 
-        self.load_collection(atlas_collection)
-
     def load_collection(self, atlas_collection: AtlasCollection = None):
         self.atlas_collection = atlas_collection
 
@@ -99,8 +97,8 @@ class TexturesView(QWidget):
 
     def load_textures(self, collection: AtlasCollection):
         self.clear()
-        for texture in collection.textures():
-            print(f"id: {str(texture.id)}", f"column: {str(texture.column)}", f"row: {str(texture.row)}")
+
+        for texture in collection:
             self.add_texture(texture)
 
     def clear(self):
