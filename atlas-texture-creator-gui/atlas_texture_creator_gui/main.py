@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QThreadPool
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QApplication
 
@@ -17,6 +17,7 @@ class AtlasTextureCreatorGUI(QApplication):
     def __init__(self):
         super().__init__()
         cache_dir = ".data"
+        self.thread_pool = QThreadPool()
         self.resources_path = self._get_resources_path()
         self.icon_path = self.resources_path / "images" / "atlas_texture_creator_icon.png"
         self.atlas_manager_handler = AtlasManagerHandler(self, cache_dir)
@@ -57,7 +58,7 @@ class AtlasTextureCreatorGUI(QApplication):
         )
 
     def _load_texture_view(self):
-        self.tv = tv = TexturesView(self.atlas_manager_handler)
+        self.tv = tv = TexturesView(self.atlas_manager_handler, parent=self.window)
         self.window.add_widget(tv)
 
     def _get_resources_path(self) -> Path:

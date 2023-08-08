@@ -2,12 +2,69 @@ import os
 import shutil
 from pathlib import Path
 from typing import overload
-from PySide6.QtCore import Signal, QObject
-from PySide6.QtWidgets import QInputDialog, QApplication, QMessageBox, QFileDialog
+from PySide6.QtCore import Signal, QObject, Slot, QRunnable
+from PySide6.QtWidgets import QInputDialog, QMessageBox, QFileDialog
 
 from atlas_texture_creator import AtlasManager, AtlasCollection, AtlasTexture
+from atlas_texture_creator.atlas_collection import AtlasCollectionTextureStore
 from atlas_texture_creator_gui.Window.GenerateAtlasWindow import GenerateAtlasWindow, GenerateAtlasReturnType
-from atlas_texture_creator_gui.handlers.CollectionCacheHandler import CollectionCacheHandler
+from atlas_texture_creator_gui.components.Window import ProgressDialog
+from atlas_texture_creator_gui.handlers.CollectionCacheHandler import CollectionCacheHandler, CollectionCache
+from atlas_texture_creator_gui.main import AtlasTextureCreatorGUI
+
+
+class AddTexturesToCollectionWorker(QRunnable):
+    def __init__(
+        self,
+        file_paths: list[str],
+        cache_collection: CollectionCache,
+        collection: AtlasCollection,
+        atlas_textures: list[AtlasTexture],
+        atlas_manager: AtlasManager,
+        progress_dialog: ProgressDialog,
+    ):
+        super().__init__()
+
+        self.file_paths = file_paths
+        self.cache_collection = cache_collection
+        self.collection = collection
+        self.atlas_textures = atlas_textures
+        self.atlas_manager = atlas_manager
+        self.progress_dialog = progress_dialog
+
+    def run(self):
+        for old_file_path in self.file_paths:
+            file_path = self.cache_collection.add_texture(old_file_path)
+            atlas_texture = self.collection.add_texture(str(file_path), file_path.stem)
+            self.atlas_textures.append(atlas_texture)
+            self.atlas_manager.add_texture(self.cache_collection.collection_name, atlas_texture)
+            self.progress_dialog.step()
+        self.progress_dialog.close_signal.emit()
+
+
+class ExportTexturesWorker(QRunnable):
+    def __init__(
+        self,
+        textures: AtlasCollectionTextureStore,
+        export_dir: str,
+        progress_dialog: ProgressDialog,
+    ):
+        super().__init__()
+
+        self.textures = textures
+        self.export_dir = export_dir
+        self.progress_dialog = progress_dialog
+
+    def run(self):
+        for texture in self.textures:
+            f = Path(texture.img_path)
+            column_str = str(texture.column)
+            row_str = str(texture.row)
+            new_file_name = f"{column_str},{row_str},{f.name}"
+            new_file_path = os.path.join(self.export_dir, new_file_name)
+            shutil.copy(texture.img_path, new_file_path)
+            self.progress_dialog.step()
+        self.progress_dialog.close_signal.emit()
 
 
 class AtlasManagerHandler(QObject):
@@ -17,7 +74,7 @@ class AtlasManagerHandler(QObject):
     on_collection_deleted = Signal(str)
     on_textures_added = Signal(AtlasCollection, list)
 
-    def __init__(self, app: QApplication, cache_dir: str):
+    def __init__(self, app: AtlasTextureCreatorGUI, cache_dir: str):
         super().__init__(app)
         self.app = app
         self.atlas_manager = AtlasManager()
@@ -142,6 +199,17 @@ class AtlasManagerHandler(QObject):
             self.add_texture_to_collection(self.current_collection)
 
     def add_texture_to_collection(self, collection: AtlasCollection):
+        def _add_texture_to_collection():
+            worker = AddTexturesToCollectionWorker(
+                file_paths=file_paths,
+                cache_collection=cache_collection,
+                collection=collection,
+                atlas_textures=atlas_textures,
+                atlas_manager=self.atlas_manager,
+                progress_dialog=progress_dialog
+            )
+            self.app.thread_pool.start(worker)
+
         window = self.app.activeWindow()
         texture_open_dialog = QFileDialog(window)
         texture_open_dialog_images_filter = "Images (*.png *.jpg)"
@@ -158,25 +226,36 @@ class AtlasManagerHandler(QObject):
             atlas_textures = []
             cache_collection = self._collection_cache_handler(collection.name)
 
-            for old_file_path in file_paths:
-                file_path = cache_collection.add_texture(old_file_path)
-                atlas_texture = collection.add_texture(str(file_path), file_path.stem)
-                atlas_textures.append(atlas_texture)
-                self.atlas_manager.add_texture(cache_collection.collection_name, atlas_texture)
+            progress_dialog = ProgressDialog(
+                label="Export Textures...",
+                max=len(file_paths),
+                parent=self.app.window
+            )
+            progress_dialog.on_open.connect(_add_texture_to_collection)
+            progress_dialog.show()
 
             self.on_textures_added.emit(collection, atlas_textures)
 
-    def export_textures_to_current_collection(self):
+    def export_textures_of_current_collection(self):
         if self.current_collection is not None:
-            self.export_textures_to_collection(self.current_collection)
+            self.export_textures_of_collection(self.current_collection)
 
     @overload
-    def export_textures_to_collection(self, collection: str): ...
+    def export_textures_of_collection(self, collection: str): ...
 
     @overload
-    def export_textures_to_collection(self, collection: AtlasCollection): ...
+    def export_textures_of_collection(self, collection: AtlasCollection): ...
 
-    def export_textures_to_collection(self, collection: AtlasCollection | str):
+    def export_textures_of_collection(self, collection: AtlasCollection | str):
+        @Slot()
+        def _export_textures_of_collection():
+            export_textures_worker = ExportTexturesWorker(
+                textures=textures,
+                export_dir=export_dir,
+                progress_dialog=progress_dialog,
+            )
+            self.app.thread_pool.start(export_textures_worker)
+
         if isinstance(collection, str):
             collection = self.atlas_manager.load_collection(collection)
         elif not isinstance(collection, AtlasCollection):
@@ -190,20 +269,22 @@ class AtlasManagerHandler(QObject):
             "Select the directory to export the textures",
             "",
             QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks,
-            )
+        )
 
         if dir_path:
             export_dir = os.path.join(dir_path, collection.name)
             if not os.path.exists(export_dir):
                 os.makedirs(export_dir)
 
-            for texture in collection.textures():
-                f = Path(texture.img_path)
-                column_str = str(texture.column)
-                row_str = str(texture.row)
-                new_file_name = f"{column_str},{row_str},{f.name}"
-                new_file_path = os.path.join(export_dir, new_file_name)
-                shutil.copy(texture.img_path, new_file_path)
+            textures = collection.textures()
+
+            progress_dialog = ProgressDialog(
+                label="Adding Textures...",
+                max=len(textures),
+                parent=self.app.window
+            )
+            progress_dialog.on_open.connect(_export_textures_of_collection)
+            progress_dialog.show()
 
     def replace_texture_of_current_collection(self, new_texture: AtlasTexture):
         if self.current_collection is not None:

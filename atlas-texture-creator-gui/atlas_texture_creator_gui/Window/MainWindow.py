@@ -49,14 +49,11 @@ class MainWindow(QMainWindow):
     def __init__(self, title: str):
         super().__init__()
 
-        self.layout_widget = layout_widget = QWidget()
+        self.main_widget = main_widget = QWidget()
         self.layout = QVBoxLayout()
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0, 0, 0, 0)
-        layout_widget.setLayout(self.layout)
-
-        self.setCentralWidget(layout_widget)
-        self.setCentralWidget(layout_widget)
+        main_widget.setLayout(self.layout)
 
         self.setGeometry(0, 0, 800, 600)
         self.setWindowTitle(title)
@@ -64,6 +61,8 @@ class MainWindow(QMainWindow):
         geo = self.frameGeometry()
         geo.moveCenter(center)
         self.move(geo.topLeft())
+
+        self.setCentralWidget(main_widget)
 
     @property
     def title(self):
@@ -132,7 +131,7 @@ class MainWindowMenubar:
                         "---": "---",
                         "export_textures": MenuBarAction(
                             label="&Export Textures",
-                            action=atlas_manager_handler.export_textures_to_current_collection,
+                            action=atlas_manager_handler.export_textures_of_current_collection,
                         ),
                     }
                 ),

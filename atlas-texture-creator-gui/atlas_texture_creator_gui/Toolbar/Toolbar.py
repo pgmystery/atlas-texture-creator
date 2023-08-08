@@ -137,7 +137,7 @@ class AtlasCollectionToolbar(QToolBar):
         self.atlas_manager_handler.generate_current_collection_to_atlas()
 
     def export_textures(self, _):
-        self.atlas_manager_handler.export_textures_to_current_collection()
+        self.atlas_manager_handler.export_textures_of_current_collection()
 
     def disable(self):
         self._set_disable(True)
