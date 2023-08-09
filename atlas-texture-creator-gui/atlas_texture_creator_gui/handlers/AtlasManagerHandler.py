@@ -227,7 +227,7 @@ class AtlasManagerHandler(QObject):
             cache_collection = self._collection_cache_handler(collection.name)
 
             progress_dialog = ProgressDialog(
-                label="Export Textures...",
+                label="Adding Textures...",
                 max=len(file_paths),
                 parent=self.app.window
             )
@@ -279,7 +279,7 @@ class AtlasManagerHandler(QObject):
             textures = collection.textures()
 
             progress_dialog = ProgressDialog(
-                label="Adding Textures...",
+                label="Export Textures...",
                 max=len(textures),
                 parent=self.app.window
             )

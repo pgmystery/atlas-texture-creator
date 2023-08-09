@@ -1,5 +1,5 @@
 from PySide6.QtCore import Signal, Qt, Slot
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont, QPalette
 from PySide6.QtWidgets import QFrame, QWidget, QVBoxLayout, QSpacerItem, QSizePolicy, QLabel, QProgressBar
 
 
@@ -13,20 +13,43 @@ class ProgressView(QFrame):
             min: int = 0,
             max: int = 100,
             current_value: int = 0,
-            parent: QWidget = None
+            parent: QWidget = None,
     ):
         super().__init__(parent=parent)
 
         self.step_signal.connect(self.step)
 
         self.layout = layout = QVBoxLayout()
-        layout.setContentsMargins(20, 0, 20, 0)
+
+        self.frame_layout = frame_layout = QVBoxLayout()
+        frame_layout.setContentsMargins(20, 10, 20, 10)
+
         self.top_spacer = top_spacer = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        layout.addItem(top_spacer)
+
+        window_color = QPalette().window().color().getRgb()
+        window_color_r = window_color[0]
+        window_color_g = window_color[1]
+        window_color_b = window_color[2]
+        window_rgb = f"rgb({window_color_r}, {window_color_g}, {window_color_b})"
+        self.frame = frame = QFrame()
+        frame.setStyleSheet(f"background-color: {window_rgb};")
+        frame.setLayout(frame_layout)
+        layout.addWidget(frame)
+
+        self.bottom_spacer = bottom_spacer = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        layout.addItem(bottom_spacer)
+
         self.label = label_widget = QLabel()
         custom_font = QFont()
         custom_font.setPointSize(18)
         label_widget.setFont(custom_font)
-        label_widget.setStyleSheet("background-color: rgba(0,0,0,0%)")
+        text_color = QPalette().text().color().getRgb()
+        text_color_r = text_color[0]
+        text_color_g = text_color[1]
+        text_color_b = text_color[2]
+        text_rgb = f"rgb({text_color_r}, {text_color_g}, {text_color_b})"
+        label_widget.setStyleSheet(f"background-color: rgba(0,0,0,0%); color: {text_rgb};")
         label_widget.setText(label)
         self.progress_bar = progress_bar = QProgressBar()
         progress_bar.setAlignment(Qt.AlignCenter)
@@ -34,12 +57,9 @@ class ProgressView(QFrame):
         progress_bar.setMaximum(max)
         progress_bar.setValue(current_value)
         progress_bar.valueChanged.connect(self.on_value_changed)
-        self.bottom_spacer = bottom_spacer = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        layout.addItem(top_spacer)
-        layout.addWidget(label_widget, 0, Qt.AlignCenter)
-        layout.addWidget(progress_bar)
-        layout.addItem(bottom_spacer)
+        frame_layout.addWidget(label_widget, 0, Qt.AlignCenter)
+        frame_layout.addWidget(progress_bar)
 
         self.setStyleSheet("background-color: rgba(255, 255, 255, 20);")
         self.setLayout(layout)
