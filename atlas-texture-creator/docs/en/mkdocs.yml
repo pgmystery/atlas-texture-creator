@@ -1,0 +1,58 @@
+site_name: Atlas Texture Creator
+
+theme:
+  name: material
+  palette:
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/lightbulb-outline
+#        icon: material/brightness-4
+#        name: Switch to system preference
+        name: Switch to light mode
+
+#    # Palette toggle for automatic mode
+#    - media: "(prefers-color-scheme)"
+#      toggle:
+#        icon: material/brightness-auto
+#        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+#        icon: material/brightness-7
+        icon: material/lightbulb
+        name: Switch to dark mode
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths:
+            - ../../
+          options:
+            show_signature: true
+#            separate_signature: false
+#            show_signature_annotations: true
+            allow_inspection: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+#            docstring_section_style: table
+            separate_signature: true
+            show_signature_annotations: true
+            signature_crossrefs: true
+#            annotations_path: brief
+            line_length: 60
+            heading_level: 3
+            show_root_heading: true
+
+markdown_extensions:
+  - toc:
+      permalink: true
+      title: Page contents
+
+watch:
+  - ../../atlas_texture_creator

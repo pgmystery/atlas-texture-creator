@@ -152,13 +152,30 @@ class AtlasCollectionTextureStore:
 
 
 class AtlasCollection:
+    """It holds all textures in a grid-store"""
+
     def __init__(self, name: str):
+        """
+        Creates a new AtlasCollection instance.
+
+        Args:
+            name: The name of the collection
+        """
+
         super().__init__()
         self.name = name
         self.texture_id = 1
         self.texture_store = AtlasCollectionTextureStore()
 
     def add_texture(self, texture_path: str, label: str) -> AtlasTexture:
+        """
+        Stores a new texture from an image file.
+
+        Args:
+            texture_path: The filepath of the image-file
+            label: The name of the new texture
+        """
+
         atlas_texture = AtlasTexture(self.texture_id, texture_path, label)
         self.texture_store.add(atlas_texture)
         return atlas_texture

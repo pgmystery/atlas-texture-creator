@@ -4,6 +4,8 @@ from .types import AtlasManagerConfigType
 
 
 class AtlasManager(AtlasStore):
+    """A manager for storing AtlasCollection's in a database"""
+
     def __init__(self, config_path: str = ""):
         super().__init__()
         # self.store = AtlasStore()
@@ -14,10 +16,21 @@ class AtlasManager(AtlasStore):
     #     pass
 
     def create_collection(self, collection_name: str) -> AtlasCollection:
+        """
+        Creating new AtlasCollection and save it into a sqlite database.
+
+        Parameters:
+            collection_name: The name for the new AtlasCollection.
+
+        Returns:
+            The new created AtlasCollection.
+        """
+
         atlas_collection = AtlasCollection(collection_name)
         super().create_collection(atlas_collection)
+
         return atlas_collection
-    #
+
     # def delete_atlas_collection(self, collection_name: str):
     #     self.store.delete_collection(collection_name)
     #

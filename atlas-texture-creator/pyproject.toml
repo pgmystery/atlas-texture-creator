@@ -12,6 +12,11 @@ sqlmodel = "^0.0.8"
 pydantic = "^1.10.7"
 pillow = "^9.5.0"
 
+[tool.poetry.group.dev.dependencies]
+mkdocs = "^1.5.2"
+mkdocs-material = "^9.1.21"
+mkdocstrings = {extras = ["python"], version = "^0.22.0"}
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
