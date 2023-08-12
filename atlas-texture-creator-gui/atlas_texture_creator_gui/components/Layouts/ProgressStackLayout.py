@@ -20,6 +20,7 @@ class ProgressStackLayout(QStackedLayout):
         min: int = 0,
         max: int = 100,
         current_value: int = 0,
+        add_background: bool = False,
     ):
         if self.progress_view is not None:
             return self.progress_view
@@ -27,7 +28,13 @@ class ProgressStackLayout(QStackedLayout):
         if current_value >= max:
             return None
 
-        self.progress_view = ProgressView(label, min=min, max=max, current_value=current_value)
+        self.progress_view = ProgressView(
+            label,
+            min=min,
+            max=max,
+            current_value=current_value,
+            add_background=add_background
+        )
         self.progress_view.on_finished.connect(self.finish_progress_view)
         self.addWidget(self.progress_view)
         self.setCurrentIndex(self.count() - 1)

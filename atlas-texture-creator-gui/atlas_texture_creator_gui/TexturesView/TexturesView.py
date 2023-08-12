@@ -98,6 +98,7 @@ class TexturesView(QWidget):
         progress_view = self.container_layout.show_progress_view(
             label="Loading Textures...",
             max=len(textures),
+            add_background=True,
         )
 
         for texture in textures:
@@ -127,6 +128,7 @@ class TexturesView(QWidget):
         progress_view = self.container_layout.show_progress_view(
             label="Loading Textures...",
             max=textures_length,
+            add_background=True,
         )
 
         for texture in collection:

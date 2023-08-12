@@ -13,6 +13,7 @@ class ProgressView(QFrame):
             min: int = 0,
             max: int = 100,
             current_value: int = 0,
+            add_background: bool = False,
             parent: QWidget = None,
     ):
         super().__init__(parent=parent)
@@ -33,7 +34,10 @@ class ProgressView(QFrame):
         window_color_b = window_color[2]
         window_rgb = f"rgb({window_color_r}, {window_color_g}, {window_color_b})"
         self.frame = frame = QFrame()
-        frame.setStyleSheet(f"background-color: {window_rgb};")
+        if add_background:
+            frame.setStyleSheet(f"background-color: {window_rgb};")
+        else:
+            frame.setStyleSheet(f"background-color: rgba(0,0,0,0%);")
         frame.setLayout(frame_layout)
         layout.addWidget(frame)
 
