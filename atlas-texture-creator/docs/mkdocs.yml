@@ -1,5 +1,7 @@
 site_name: Atlas Texture Creator
 
+#docs_dir: ./docs/en
+
 theme:
   name: material
   palette:
@@ -32,7 +34,8 @@ plugins:
       handlers:
         python:
           paths:
-            - ../../
+#            - ../../
+            - ../
           options:
             show_signature: true
 #            separate_signature: false
@@ -48,6 +51,7 @@ plugins:
             line_length: 60
             heading_level: 3
             show_root_heading: true
+            show_if_no_docstring: true
 
 markdown_extensions:
   - toc:
@@ -55,4 +59,4 @@ markdown_extensions:
       title: Page contents
 
 watch:
-  - ../../atlas_texture_creator
+  - ../atlas_texture_creator
