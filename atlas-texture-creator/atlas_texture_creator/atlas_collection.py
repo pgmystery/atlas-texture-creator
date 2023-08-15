@@ -16,12 +16,20 @@ class AtlasGridItem(BaseModel):
 
 
 class GenerateAtlasOptionsSize(BaseModel):
+    """The size model with width and height"""
+
     width: int
+    """The width of the image"""
+
     height: int
+    """The height of the image"""
 
 
 class GenerateAtlasOptions(BaseModel):
+    """Options for generate a new atlas image."""
+
     lock_size: GenerateAtlasOptionsSize | None
+    """If this is set, the images getting resizes to this size width and height"""
 
 
 class GenerateAtlasCoordTexture(BaseModel):
@@ -163,8 +171,8 @@ class AtlasCollection:
         """
 
         super().__init__()
-        self.name = name
-        self.texture_id = 1
+        self.name: str = name
+        self.texture_id: int = 1
         self.texture_store = AtlasCollectionTextureStore()
 
     def add_texture(self, texture_path: str, label: str) -> AtlasTexture:
@@ -181,25 +189,68 @@ class AtlasCollection:
         return atlas_texture
 
     def load_texture(self, texture: AtlasTexture):
+        """
+        Add a AtlasTexture instance to the collection.
+
+        Args:
+            texture: The AtlasTexture instance
+        """
+
         self.texture_store.add(texture)
 
     def load_textures(self, textures: list[AtlasTexture]):
+        """
+        Add multiple AtlasTexture instances to the collection.
+
+        Args:
+            textures: The list of AtlasTexture instances
+        """
+
         for texture in textures:
             self.load_texture(texture)
 
     def get_texture(self, row: int, column: int) -> AtlasTexture:
+        """
+        Get the texture by the row and column coordinate as an AtlasTexture instance.
+
+        Args:
+            row: The row-number
+            column: The column-number
+        """
+
         return self.texture_store.get(row=row, column=column)
 
     def textures(self) -> AtlasCollectionTextureStore:
+        """
+        Returns the store where the textures stored in.
+        """
+
         return self.texture_store
 
     def replace_texture(self, new_texture: AtlasTexture):
+        """
+        Replace the saved texture with the new AtlasTexture instance.
+
+        Args:
+            new_texture: The new AtlasTexture instance
+        """
+
         column = new_texture.column
         row = new_texture.row
 
         self.texture_store.replace(new_texture, row=row, column=column)
 
     def generate_atlas(self, options: GenerateAtlasOptions = None) -> tuple[Image.Image, GenerateAtlasTextureCoords]:
+        """
+        Generate the atlas image from the saved textures.
+
+        Args:
+            options:
+
+        Returns:
+
+        """
+
         textures_coord = GenerateAtlasTextureCoords()
         atlas_width = 0
         atlas_height = 0

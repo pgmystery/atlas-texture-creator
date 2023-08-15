@@ -1,4 +1,6 @@
 class AtlasTexture:
+    """The texture which saved in the collection."""
+
     def __init__(self, id: int, texture_path: str, label: str):
         self.row = -1
         self.column = -1
@@ -6,7 +8,12 @@ class AtlasTexture:
         self.texture_path = texture_path
         self._label = label
 
-    def get_coord(self):
+    def get_coord(self) -> tuple[int, int]:
+        """
+        Returns:
+            (column, row)
+        """
+
         return (self.column, self.row)
 
     def set_coord(self, column: int, row: int):
