@@ -5,7 +5,7 @@ from typing import overload
 from PySide6.QtCore import Signal, QObject, Slot, QRunnable
 from PySide6.QtWidgets import QInputDialog, QMessageBox, QFileDialog
 
-from atlas_texture_creator import AtlasManager, AtlasCollection, AtlasTexture
+from atlas_texture_creator import AtlasManager, AtlasCollection, AtlasTexture, AtlasTextureModel
 from atlas_texture_creator.atlas_collection import AtlasCollectionTextureStore
 from atlas_texture_creator_gui.Window.GenerateAtlasWindow import GenerateAtlasWindow, GenerateAtlasReturnType
 from atlas_texture_creator_gui.components.Window import ProgressDialog
@@ -35,7 +35,11 @@ class AddTexturesToCollectionWorker(QRunnable):
     def run(self):
         for old_file_path in self.file_paths:
             file_path = self.cache_collection.add_texture(old_file_path)
-            atlas_texture = self.collection.add_texture(str(file_path), file_path.stem)
+            atlas_texture_model = AtlasTextureModel(
+                label=file_path.stem,
+                path=Path(file_path),
+            )
+            atlas_texture = self.collection.add_texture(atlas_texture_model)
             self.atlas_textures.append(atlas_texture)
             self.atlas_manager.add_texture(self.cache_collection.collection_name, atlas_texture)
             self.progress_dialog.step()
@@ -276,7 +280,7 @@ class AtlasManagerHandler(QObject):
             if not os.path.exists(export_dir):
                 os.makedirs(export_dir)
 
-            textures = collection.textures()
+            textures = collection.textures
 
             progress_dialog = ProgressDialog(
                 label="Export Textures...",
@@ -299,11 +303,15 @@ class AtlasManagerHandler(QObject):
         cache_collection = self._collection_cache_handler(collection.name)
 
         old_texture = collection.get_texture(new_texture.row, new_texture.column)
-        old_texture_path = old_texture.texture_path
-        new_texture_path = new_texture.texture_path
+        old_texture_path = old_texture.path
+        new_texture_path = str(new_texture.path)
         if old_texture_path != new_texture_path:
             old_texture_name = Path(old_texture_path).name
-            new_texture.texture_path = cache_collection.replace_texture(old_texture_name, new_texture_path)
+            new_texture.path = cache_collection.replace_texture(old_texture_name, new_texture_path)
 
         self.atlas_manager.update_texture(collection.name, new_texture)
-        collection.replace_texture(new_texture)
+        collection.update_texture(
+            row=new_texture.row,
+            column=new_texture.column,
+            new_texture_model=AtlasTextureModel(**dict(new_texture)),
+        )

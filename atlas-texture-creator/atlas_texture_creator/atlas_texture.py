@@ -1,13 +1,21 @@
-class AtlasTexture:
-    def __init__(self, id: int, texture_path: str, label: str):
-        self.row = -1
-        self.column = -1
-        self.id = id
-        self.texture_path = texture_path
-        self._label = label
+from pydantic import FilePath, BaseModel
 
-    def get_coord(self):
-        return (self.column, self.row)
+from atlas_texture_creator.types import AtlasGridItem
+
+
+class AtlasTextureModel(BaseModel):
+    path: FilePath
+    label: str
+
+
+class AtlasTexture(AtlasGridItem, AtlasTextureModel):
+    def get_coord(self) -> AtlasGridItem:
+        atlas_grid_item = AtlasGridItem(
+            column=self.column,
+            row=self.row,
+        )
+
+        return atlas_grid_item
 
     def set_coord(self, column: int, row: int):
         self.column = column
@@ -15,16 +23,16 @@ class AtlasTexture:
 
     @property
     def img_path(self):
-        return self.texture_path
+        return self.path
 
-    @img_path.setter
-    def img_path(self, path: str):
-        self.texture_path = path
+    def set_img_path(self, path):
+        self.path = path
 
-    @property
-    def label(self):
-        return self._label
+    def get_data(self) -> AtlasTextureModel:
+        return AtlasTextureModel(**dict(self))
 
-    @label.setter
-    def label(self, text: str):
-        self._label = text
+    def update(self, new_atlas_texture: AtlasTextureModel):
+        new_atlas_texture_dict = dict(new_atlas_texture)
+
+        self.__class__.validate(self.__dict__ | new_atlas_texture_dict)
+        self.__dict__.update(**new_atlas_texture_dict)
