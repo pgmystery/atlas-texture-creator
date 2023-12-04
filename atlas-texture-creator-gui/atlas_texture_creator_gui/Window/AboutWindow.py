@@ -1,4 +1,6 @@
 from importlib.metadata import version
+
+from PySide6 import QtCore
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QDialog, QHBoxLayout, QLabel, QWidget, QVBoxLayout, QPushButton
@@ -22,14 +24,15 @@ class AboutWindow(QDialog):
         self.icon = icon = QPixmap(icon_path)
         self.icon_label = icon_label = QLabel(self)
         icon_label.setPixmap(icon)
+        icon_label.setStyleSheet("QLabel {padding-top: 9px;}")
 
         self.about_text = about_text = QLabel(self)
         about_text.setText(f"""
             <html>
                 <body style="margin: 0;">
-                    <p>
-                        <span style="font-size:20pt;">Atlas Texture Creator</span>
-                    </p>
+                    <h1 style="font-size:20pt;">
+                        Atlas Texture Creator
+                    </h1>
                     <p>
                         <span>Atlas-Texture-Creator-GUI Version: {atlas_texture_creator_gui_version}</span>
                     </p>
@@ -44,6 +47,10 @@ class AboutWindow(QDialog):
             </html>
         """)
         about_text.setOpenExternalLinks(True)
+        about_text.setTextInteractionFlags(
+            about_text.textInteractionFlags() | QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByKeyboard
+        )
+        about_text.setAlignment(QtCore.Qt.AlignTop)
 
         info_layout.addWidget(icon_label, 0, Qt.AlignTop)
         info_layout.addWidget(about_text, 1, Qt.AlignTop)
@@ -58,6 +65,9 @@ class AboutWindow(QDialog):
         self.setLayout(layout)
         self.setFixedSize(460, 250)
         self.setWindowTitle("About Atlas-Texture-Creator")
+
+        print(icon_label.pos())
+        print(about_text.pos())
 
     def show(self):
         self.exec()
