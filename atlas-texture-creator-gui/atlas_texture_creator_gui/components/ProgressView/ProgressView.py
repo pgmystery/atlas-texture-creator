@@ -17,6 +17,7 @@ class ProgressView(QFrame):
             parent: QWidget = None,
     ):
         super().__init__(parent=parent)
+        self.setContentsMargins(20, 0, 20, 0)
 
         self.step_signal.connect(self.step)
 

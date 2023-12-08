@@ -1,5 +1,6 @@
 import time
 
+from PySide6 import QtCore
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QScrollArea, QGridLayout, QWidget, QHBoxLayout
 
@@ -9,6 +10,7 @@ from .TextureViewImageInfo import TextureViewImageInfo
 from atlas_texture_creator.atlas_texture import AtlasTexture
 from atlas_texture_creator_gui.handlers import AtlasManagerHandler
 from atlas_texture_creator_gui.components.Layouts import ProgressStackLayout
+from atlas_texture_creator_gui.components.ProgressView.ProgressView import ProgressView
 
 
 class TexturesView(QWidget):
@@ -64,6 +66,8 @@ class TexturesView(QWidget):
         else:
             self.load_textures(atlas_collection)
 
+        print("ATLAS_COLLECTION_CHANGED")
+
     @Slot(AtlasCollection)
     def on_atlas_collection_changed(self, collection: AtlasCollection):
         self.atlas_collection = collection
@@ -102,13 +106,16 @@ class TexturesView(QWidget):
         )
 
         for texture in textures:
-            self.add_texture(texture)
-            progress_view.step()
+            self.add_texture(texture, progress_view)
 
         end_time = time.time()
         print(f"{end_time - start_time} seconds for adding the textures")
 
-    def add_texture(self, texture: AtlasTexture):
+    def add_texture(self, texture: AtlasTexture, progress_view: ProgressView):
+        def _add_texture(tvi, x, y):
+            self.texture_view_layout.addWidget(tvi, x, y)
+            progress_view.step()
+
         x = texture.row
         y = texture.column
 
@@ -117,7 +124,12 @@ class TexturesView(QWidget):
             on_click=self.on_texture_click,
         )
 
-        self.texture_view_layout.addWidget(tvi, x, y)
+        if not self.parent().parent().isVisible():
+            self.texture_view_layout.addWidget(tvi, x, y)
+            progress_view.step()
+        else:
+            QtCore.QTimer.singleShot(1000, lambda tvi=tvi, x=x, y=y: _add_texture(tvi, x, y))
+
 
     def load_textures(self, collection: AtlasCollection):
         self.clear()
@@ -125,6 +137,9 @@ class TexturesView(QWidget):
         start_time = time.time()
 
         textures_length = len(collection)
+        if textures_length == 0:
+            return
+
         progress_view = self.container_layout.show_progress_view(
             label="Loading Textures...",
             max=textures_length,
@@ -132,8 +147,7 @@ class TexturesView(QWidget):
         )
 
         for texture in collection:
-            self.add_texture(texture)
-            progress_view.step()
+            self.add_texture(texture, progress_view)
 
         end_time = time.time()
         print(f"{end_time - start_time} seconds for loading the textures")

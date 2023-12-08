@@ -26,7 +26,7 @@ class ProgressStackLayout(QStackedLayout):
             return self.progress_view
 
         if current_value >= max:
-            return None
+            current_value = max
 
         self.progress_view = ProgressView(
             label,

@@ -37,6 +37,9 @@ class TextureViewImageInfo(QDockWidget):
         self.size_info = QLabel()
         layout.addWidget(self.size_info)
 
+        self.coord_info = QLabel()
+        layout.addWidget(self.coord_info)
+
         vertical_spacer = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
         layout.addItem(vertical_spacer)
 
@@ -55,12 +58,17 @@ class TextureViewImageInfo(QDockWidget):
         self.texture_view.set_image(image_path)
         self.texture_name_box.setText(tvi.text)
         self.set_texture_size_text(image_path)
+        self.set_texture_coord_text(tvi.texture)
         self.setVisible(True)
 
     def set_texture_size_text(self, image_path: str):
         img = Image.open(image_path)
         size_info_text = f"width: {img.width} - height: {img.height}"
         self.size_info.setText(size_info_text)
+
+    def set_texture_coord_text(self, texture: AtlasTexture):
+        coord_info_text = f"Row: {str(texture.row)} - Column: {str(texture.column)}"
+        self.coord_info.setText(coord_info_text)
 
     def closeEvent(self, event: QCloseEvent):
         self._close(event)
@@ -76,7 +84,7 @@ class TextureViewImageInfo(QDockWidget):
         new_img_path = self.texture_open_dialog.getOpenFileName(
             self,
             "Select the texture to replace",
-            self.tvi.texture.img_path,
+            str(self.tvi.texture.img_path),
             self.texture_open_dialog_images_filter,
             self.texture_open_dialog_images_filter
         )[0]
@@ -112,10 +120,7 @@ class TextureViewImageInfoTexture(QWidget):
         self.setLayout(layout)
 
     def set_image(self, image_path: str):
-        widht = self.pixmap_label_size.width()
-        height = self.pixmap_label_size.height()
         pixmap = QPixmap(image_path)
-        pixmap = pixmap.scaled(widht, height, Qt.KeepAspectRatio)
         self.pixmap_label.setPixmap(pixmap)
 
     def _pixmal_label_resize_event(self, event):
