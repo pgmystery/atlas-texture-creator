@@ -106,12 +106,12 @@ class TexturesView(QWidget):
         )
 
         for texture in textures:
-            self.add_texture(texture, progress_view)
+            self.add_texture(texture, progress_view, len(textures))
 
         end_time = time.time()
         print(f"{end_time - start_time} seconds for adding the textures")
 
-    def add_texture(self, texture: AtlasTexture, progress_view: ProgressView):
+    def add_texture(self, texture: AtlasTexture, progress_view: ProgressView, texture_length: int = 0):
         def _add_texture(tvi, x, y):
             self.texture_view_layout.addWidget(tvi, x, y)
             progress_view.step()
@@ -124,12 +124,10 @@ class TexturesView(QWidget):
             on_click=self.on_texture_click,
         )
 
-        if not self.parent().parent().isVisible():
-            self.texture_view_layout.addWidget(tvi, x, y)
-            progress_view.step()
+        if not self.parent().parent().isVisible() or texture_length < 30:
+            _add_texture(tvi, x, y)
         else:
             QtCore.QTimer.singleShot(1000, lambda tvi=tvi, x=x, y=y: _add_texture(tvi, x, y))
-
 
     def load_textures(self, collection: AtlasCollection):
         self.clear()
@@ -147,7 +145,7 @@ class TexturesView(QWidget):
         )
 
         for texture in collection:
-            self.add_texture(texture, progress_view)
+            self.add_texture(texture, progress_view, len(collection.textures))
 
         end_time = time.time()
         print(f"{end_time - start_time} seconds for loading the textures")
