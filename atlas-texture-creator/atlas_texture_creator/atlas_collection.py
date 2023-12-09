@@ -2,7 +2,7 @@ import math
 from typing import Iterator
 
 from PIL import Image
-from pydantic import BaseModel, Field, Extra
+from pydantic import BaseModel, Field, Extra, constr
 
 from atlas_texture_creator.atlas_texture import AtlasTexture, AtlasTextureModel
 from atlas_texture_creator.types import GenerateAtlasReturnType, GenerateAtlasCoordTexture, \
@@ -10,7 +10,7 @@ from atlas_texture_creator.types import GenerateAtlasReturnType, GenerateAtlasCo
 
 
 class AtlasCollectionModel(BaseModel):
-    name: str = Field(unique=True)
+    name: constr(min_length=1) = Field(unique=True)
 
 
 class GenerateAtlasTextureCoords:

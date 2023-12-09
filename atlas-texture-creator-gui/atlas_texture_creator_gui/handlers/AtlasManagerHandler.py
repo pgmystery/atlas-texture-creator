@@ -140,7 +140,7 @@ class AtlasManagerHandler(QObject):
             "Enter your new Atlas-Collection name"
         )
 
-        if is_ok:
+        if is_ok and len(collection_name) > 0:
             atlas_collection = self.atlas_manager.create_collection(collection_name)
             self.on_collection_created.emit(atlas_collection)
             self.current_collection = atlas_collection
