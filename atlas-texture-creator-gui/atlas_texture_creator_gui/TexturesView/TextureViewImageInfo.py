@@ -89,7 +89,7 @@ class TextureViewImageInfo(QDockWidget):
             self.texture_open_dialog_images_filter
         )[0]
         if new_img_path:
-            self.tmp_texture.img_path = new_img_path
+            self.tmp_texture.set_img_path(new_img_path)
             self.texture_view.set_image(new_img_path)
             self.set_texture_size_text(new_img_path)
 
