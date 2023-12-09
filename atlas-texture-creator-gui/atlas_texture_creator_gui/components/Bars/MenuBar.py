@@ -1,6 +1,6 @@
 from typing import Callable, Literal, TypeVar, Generic
 
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QKeySequence
 from PySide6.QtWidgets import QMenuBar, QMenu
 from pydantic import BaseModel
 
@@ -16,12 +16,15 @@ MenuBarMenuType = dict[str, "MenuBarMenuItemType"]
 
 
 class MenuBarAction(QAction):
-    def __init__(self, label: str, action: Callable):
+    def __init__(self, label: str, action: Callable, shortcut: str = None):
         self.label = label
         self.action = action
+        self.shortcut = shortcut
 
         super().__init__()
         self.setText(label)
+        if shortcut is not None:
+            self.setShortcut(QKeySequence(shortcut))
         self.triggered.connect(action)
 
     def __str__(self):

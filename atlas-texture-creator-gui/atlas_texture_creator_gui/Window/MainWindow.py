@@ -100,6 +100,7 @@ class MainWindowMenubar:
                         "quit": MenuBarAction(
                             label="&Quit",
                             action=exit_callback,
+                            shortcut="Alt+F4",
                         ),
                     }
                 ),
@@ -109,15 +110,18 @@ class MainWindowMenubar:
                         "new_atlas_collection": MenuBarAction(
                             label="&New Atlas-Collection",
                             action=atlas_manager_handler.create_collection,
+                            shortcut="Ctrl+N",
                         ),
                         "delete_atlas_collection": MenuBarAction(
                             label="&Delete selected Atlas-Collection",
                             action=atlas_manager_handler.delete_current_collection,
+                            shortcut="Del",
                         ),
                         "---": "---",
                         "generate_atlas": MenuBarAction(
                             label="&Generate Atlas",
                             action=atlas_manager_handler.generate_current_collection_to_atlas,
+                            shortcut="Ctrl+G",
                         ),
                     }
                 ),
@@ -127,11 +131,13 @@ class MainWindowMenubar:
                         "add_texture": MenuBarAction(
                             label="&Add Texture",
                             action=atlas_manager_handler.add_texture_to_current_collection,
+                            shortcut="Ctrl+Shift+N",
                         ),
                         "---": "---",
                         "export_textures": MenuBarAction(
                             label="&Export Textures",
                             action=atlas_manager_handler.export_textures_of_current_collection,
+                            shortcut="Ctrl+T",
                         ),
                     }
                 ),
@@ -141,6 +147,7 @@ class MainWindowMenubar:
                         "about": MenuBarAction(
                             label="&About",
                             action=about_callback,
+                            shortcut="F1",
                         ),
                     }
                 ),
