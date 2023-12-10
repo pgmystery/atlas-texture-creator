@@ -27,7 +27,8 @@ class TextureViewImageInfo(QDockWidget):
 
         self.texture_open_dialog = QFileDialog(self)
         self.texture_open_dialog_images_filter = "Images (*.png *.jpg)"
-        self.texture_view = TextureViewImageInfoTexture(self._on_replace_texture_clicked, self.width())
+        max_texture_width = self.width() - (layout.spacing() * 2)
+        self.texture_view = TextureViewImageInfoTexture(self._on_replace_texture_clicked, max_texture_width)
         layout.addWidget(self.texture_view)
 
         self.texture_name_box = texture_name_box = QLineEdit()
@@ -111,7 +112,6 @@ class TextureViewImageInfoTexture(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
 
         self.pixmap_label = pixmap_label = QLabel(alignment=Qt.AlignCenter)
-        self.pixmap_label.resizeEvent = self._pixmal_label_resize_event
         pixmap_label.setScaledContents(True)
         self.pixmap_label_size = pixmap_label.size()
         layout.addWidget(pixmap_label)
@@ -125,13 +125,3 @@ class TextureViewImageInfoTexture(QWidget):
         pixmap = QPixmap(image_path)
         pixmap = pixmap.scaled(self.max_width, self.max_width, Qt.KeepAspectRatio)
         self.pixmap_label.setPixmap(pixmap)
-
-    def _pixmal_label_resize_event(self, event):
-        size = event.size()
-        width = size.width()
-        height = size.height()
-
-        if width != height:
-            pixmap = self.pixmap_label.pixmap()
-            pixmap = pixmap.scaled(width, width, Qt.KeepAspectRatio)
-            self.pixmap_label.setPixmap(pixmap)
