@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    name: Run tests
+    name: Run atlas-texture-creator tests
     runs-on: ubuntu-latest
     defaults:
       run:
