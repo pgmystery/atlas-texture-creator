@@ -22,11 +22,12 @@ class CollectionCache(Path):
 
         return file_path
 
-    def replace_texture(self, texture_name: str, new_texture_path: str) -> str:
+    def replace_texture(self, texture_name: str, new_texture_path: str, number_of_texture_path_in_use: int = 1) -> str:
         file_path = Path(self) / texture_name
 
         if not self._same_file(file_path, Path(new_texture_path)):
-            os.remove(file_path)
+            if number_of_texture_path_in_use <= 1:
+                os.remove(file_path)
             new_texture_path = self.add_texture(new_texture_path)
 
         return str(new_texture_path)

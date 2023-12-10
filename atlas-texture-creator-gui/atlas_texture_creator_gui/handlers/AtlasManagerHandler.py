@@ -306,8 +306,16 @@ class AtlasManagerHandler(QObject):
         old_texture_path = old_texture.path
         new_texture_path = str(new_texture.path)
         if old_texture_path != new_texture_path:
+            number_of_texture_path_in_use = len(list(filter(
+                lambda texture: texture.path == old_texture.path,
+                collection.textures
+            )))
             old_texture_name = Path(old_texture_path).name
-            new_texture.path = cache_collection.replace_texture(old_texture_name, new_texture_path)
+            new_texture.path = cache_collection.replace_texture(
+                old_texture_name,
+                new_texture_path,
+                number_of_texture_path_in_use=number_of_texture_path_in_use
+            )
 
         self.atlas_manager.update_texture(collection.name, new_texture)
         collection.update_texture(

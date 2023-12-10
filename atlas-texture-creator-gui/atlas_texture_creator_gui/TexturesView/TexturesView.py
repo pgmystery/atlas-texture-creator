@@ -66,8 +66,6 @@ class TexturesView(QWidget):
         else:
             self.load_textures(atlas_collection)
 
-        print("ATLAS_COLLECTION_CHANGED")
-
     @Slot(AtlasCollection)
     def on_atlas_collection_changed(self, collection: AtlasCollection):
         self.atlas_collection = collection
