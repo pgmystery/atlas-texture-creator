@@ -27,7 +27,7 @@ class TextureViewImageInfo(QDockWidget):
 
         self.texture_open_dialog = QFileDialog(self)
         self.texture_open_dialog_images_filter = "Images (*.png *.jpg)"
-        self.texture_view = TextureViewImageInfoTexture(self._on_replace_texture_clicked)
+        self.texture_view = TextureViewImageInfoTexture(self._on_replace_texture_clicked, self.width())
         layout.addWidget(self.texture_view)
 
         self.texture_name_box = texture_name_box = QLineEdit()
@@ -84,7 +84,7 @@ class TextureViewImageInfo(QDockWidget):
         new_img_path = self.texture_open_dialog.getOpenFileName(
             self,
             "Select the texture to replace",
-            str(self.tvi.texture.img_path),
+            "",
             self.texture_open_dialog_images_filter,
             self.texture_open_dialog_images_filter
         )[0]
@@ -102,8 +102,10 @@ class TextureViewImageInfo(QDockWidget):
 
 
 class TextureViewImageInfoTexture(QWidget):
-    def __init__(self, replace_click_callback: Callable):
+    def __init__(self, replace_click_callback: Callable, max_width: int):
         super().__init__()
+        self.max_width = max_width
+
         layout = QVBoxLayout(self)
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -121,6 +123,7 @@ class TextureViewImageInfoTexture(QWidget):
 
     def set_image(self, image_path: str):
         pixmap = QPixmap(image_path)
+        pixmap = pixmap.scaled(self.max_width, self.max_width, Qt.KeepAspectRatio)
         self.pixmap_label.setPixmap(pixmap)
 
     def _pixmal_label_resize_event(self, event):
