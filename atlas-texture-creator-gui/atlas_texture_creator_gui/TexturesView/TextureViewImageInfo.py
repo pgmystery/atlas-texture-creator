@@ -8,7 +8,8 @@ from PySide6.QtWidgets import QVBoxLayout, QLabel, QLineEdit, QSpacerItem, QSize
     QDockWidget, QWidget, QFileDialog
 
 from atlas_texture_creator import AtlasTexture
-from .TexturesView import TextureViewImage
+from atlas_texture_creator_gui.TexturesView.TextureViewImage import TextureViewImage
+from atlas_texture_creator_gui.utils.image_format import get_supported_image_formats
 
 
 class TextureViewImageInfo(QDockWidget):
@@ -26,7 +27,7 @@ class TextureViewImageInfo(QDockWidget):
         widget.setLayout(layout)
 
         self.texture_open_dialog = QFileDialog(self)
-        self.texture_open_dialog_images_filter = "Images (*.png *.jpg)"
+        self.texture_open_dialog_images_filter = f"Images ({get_supported_image_formats()})"
         max_texture_width = self.width() - (layout.spacing() * 2)
         self.texture_view = TextureViewImageInfoTexture(self._on_replace_texture_clicked, max_texture_width)
         layout.addWidget(self.texture_view)

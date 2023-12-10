@@ -11,6 +11,7 @@ from atlas_texture_creator_gui.Window.GenerateAtlasWindow import GenerateAtlasWi
 from atlas_texture_creator_gui.components.Window import ProgressDialog
 from atlas_texture_creator_gui.handlers.CollectionCacheHandler import CollectionCacheHandler, CollectionCache
 from atlas_texture_creator_gui.main import AtlasTextureCreatorGUI
+from atlas_texture_creator_gui.utils.image_format import get_supported_image_formats
 
 
 class AddTexturesToCollectionWorker(QRunnable):
@@ -216,7 +217,7 @@ class AtlasManagerHandler(QObject):
 
         window = self.app.activeWindow()
         texture_open_dialog = QFileDialog(window)
-        texture_open_dialog_images_filter = "Images (*.png *.jpg)"
+        texture_open_dialog_images_filter = f"Images ({get_supported_image_formats()})"
 
         file_paths = texture_open_dialog.getOpenFileNames(
             window,
