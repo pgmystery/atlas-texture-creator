@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "atlas-texture-creator-gui"
-version = "0.2.0"
+version = "0.3.0"
 description = ""
 authors = ["pglaw <philipp.glaw@gmx.de>"]
 readme = "README.md"
@@ -9,15 +9,17 @@ packages = [{include = "atlas_texture_creator_gui"}]
 [tool.poetry.scripts]
 gui = "atlas_texture_creator_gui.main:start"
 build = "build:build"
+#designer = "pyside6-designer"
 
 [tool.poetry.dependencies]
-python = "~3.11"
-pyside6 = "^6.5.0"
-pyinstaller = "^5.11.0"
+python = "^3.12"
+pyside6 = "^6.6.0"
 atlas_texture_creator = {path = "../atlas-texture-creator", develop = true}
+pyinstaller = "^6.2.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
+pytest-qt = "^4.2.0"
 
 [build-system]
 requires = ["poetry-core"]

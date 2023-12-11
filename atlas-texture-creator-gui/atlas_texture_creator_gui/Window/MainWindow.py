@@ -49,14 +49,11 @@ class MainWindow(QMainWindow):
     def __init__(self, title: str):
         super().__init__()
 
-        self.layout_widget = layout_widget = QWidget()
+        self.main_widget = main_widget = QWidget()
         self.layout = QVBoxLayout()
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0, 0, 0, 0)
-        layout_widget.setLayout(self.layout)
-
-        self.setCentralWidget(layout_widget)
-        self.setCentralWidget(layout_widget)
+        main_widget.setLayout(self.layout)
 
         self.setGeometry(0, 0, 800, 600)
         self.setWindowTitle(title)
@@ -64,6 +61,8 @@ class MainWindow(QMainWindow):
         geo = self.frameGeometry()
         geo.moveCenter(center)
         self.move(geo.topLeft())
+
+        self.setCentralWidget(main_widget)
 
     @property
     def title(self):
@@ -101,6 +100,7 @@ class MainWindowMenubar:
                         "quit": MenuBarAction(
                             label="&Quit",
                             action=exit_callback,
+                            shortcut="Alt+F4",
                         ),
                     }
                 ),
@@ -110,15 +110,18 @@ class MainWindowMenubar:
                         "new_atlas_collection": MenuBarAction(
                             label="&New Atlas-Collection",
                             action=atlas_manager_handler.create_collection,
+                            shortcut="Ctrl+N",
                         ),
                         "delete_atlas_collection": MenuBarAction(
                             label="&Delete selected Atlas-Collection",
                             action=atlas_manager_handler.delete_current_collection,
+                            shortcut="Del",
                         ),
                         "---": "---",
                         "generate_atlas": MenuBarAction(
                             label="&Generate Atlas",
                             action=atlas_manager_handler.generate_current_collection_to_atlas,
+                            shortcut="Ctrl+G",
                         ),
                     }
                 ),
@@ -128,11 +131,13 @@ class MainWindowMenubar:
                         "add_texture": MenuBarAction(
                             label="&Add Texture",
                             action=atlas_manager_handler.add_texture_to_current_collection,
+                            shortcut="Ctrl+Shift+N",
                         ),
                         "---": "---",
                         "export_textures": MenuBarAction(
                             label="&Export Textures",
-                            action=atlas_manager_handler.export_textures_to_current_collection,
+                            action=atlas_manager_handler.export_textures_of_current_collection,
+                            shortcut="Ctrl+T",
                         ),
                     }
                 ),
@@ -142,6 +147,7 @@ class MainWindowMenubar:
                         "about": MenuBarAction(
                             label="&About",
                             action=about_callback,
+                            shortcut="F1",
                         ),
                     }
                 ),

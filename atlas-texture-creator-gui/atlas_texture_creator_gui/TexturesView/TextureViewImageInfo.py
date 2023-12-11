@@ -8,7 +8,8 @@ from PySide6.QtWidgets import QVBoxLayout, QLabel, QLineEdit, QSpacerItem, QSize
     QDockWidget, QWidget, QFileDialog
 
 from atlas_texture_creator import AtlasTexture
-from .TexturesView import TextureViewImage
+from atlas_texture_creator_gui.TexturesView.TextureViewImage import TextureViewImage
+from atlas_texture_creator_gui.utils.image_format import get_supported_image_formats
 
 
 class TextureViewImageInfo(QDockWidget):
@@ -26,8 +27,9 @@ class TextureViewImageInfo(QDockWidget):
         widget.setLayout(layout)
 
         self.texture_open_dialog = QFileDialog(self)
-        self.texture_open_dialog_images_filter = "Images (*.png *.jpg)"
-        self.texture_view = TextureViewImageInfoTexture(self._on_replace_texture_clicked)
+        self.texture_open_dialog_images_filter = f"Images ({get_supported_image_formats()})"
+        max_texture_width = self.width() - (layout.spacing() * 2)
+        self.texture_view = TextureViewImageInfoTexture(self._on_replace_texture_clicked, max_texture_width)
         layout.addWidget(self.texture_view)
 
         self.texture_name_box = texture_name_box = QLineEdit()
@@ -36,6 +38,9 @@ class TextureViewImageInfo(QDockWidget):
 
         self.size_info = QLabel()
         layout.addWidget(self.size_info)
+
+        self.coord_info = QLabel()
+        layout.addWidget(self.coord_info)
 
         vertical_spacer = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
         layout.addItem(vertical_spacer)
@@ -55,12 +60,17 @@ class TextureViewImageInfo(QDockWidget):
         self.texture_view.set_image(image_path)
         self.texture_name_box.setText(tvi.text)
         self.set_texture_size_text(image_path)
+        self.set_texture_coord_text(tvi.texture)
         self.setVisible(True)
 
     def set_texture_size_text(self, image_path: str):
         img = Image.open(image_path)
         size_info_text = f"width: {img.width} - height: {img.height}"
         self.size_info.setText(size_info_text)
+
+    def set_texture_coord_text(self, texture: AtlasTexture):
+        coord_info_text = f"Row: {str(texture.row)} - Column: {str(texture.column)}"
+        self.coord_info.setText(coord_info_text)
 
     def closeEvent(self, event: QCloseEvent):
         self._close(event)
@@ -76,12 +86,12 @@ class TextureViewImageInfo(QDockWidget):
         new_img_path = self.texture_open_dialog.getOpenFileName(
             self,
             "Select the texture to replace",
-            self.tvi.texture.img_path,
+            "",
             self.texture_open_dialog_images_filter,
             self.texture_open_dialog_images_filter
         )[0]
         if new_img_path:
-            self.tmp_texture.img_path = new_img_path
+            self.tmp_texture.set_img_path(new_img_path)
             self.texture_view.set_image(new_img_path)
             self.set_texture_size_text(new_img_path)
 
@@ -94,14 +104,15 @@ class TextureViewImageInfo(QDockWidget):
 
 
 class TextureViewImageInfoTexture(QWidget):
-    def __init__(self, replace_click_callback: Callable):
+    def __init__(self, replace_click_callback: Callable, max_width: int):
         super().__init__()
+        self.max_width = max_width
+
         layout = QVBoxLayout(self)
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
 
         self.pixmap_label = pixmap_label = QLabel(alignment=Qt.AlignCenter)
-        self.pixmap_label.resizeEvent = self._pixmal_label_resize_event
         pixmap_label.setScaledContents(True)
         self.pixmap_label_size = pixmap_label.size()
         layout.addWidget(pixmap_label)
@@ -112,18 +123,6 @@ class TextureViewImageInfoTexture(QWidget):
         self.setLayout(layout)
 
     def set_image(self, image_path: str):
-        widht = self.pixmap_label_size.width()
-        height = self.pixmap_label_size.height()
         pixmap = QPixmap(image_path)
-        pixmap = pixmap.scaled(widht, height, Qt.KeepAspectRatio)
+        pixmap = pixmap.scaled(self.max_width, self.max_width, Qt.KeepAspectRatio)
         self.pixmap_label.setPixmap(pixmap)
-
-    def _pixmal_label_resize_event(self, event):
-        size = event.size()
-        width = size.width()
-        height = size.height()
-
-        if width != height:
-            pixmap = self.pixmap_label.pixmap()
-            pixmap = pixmap.scaled(width, width, Qt.KeepAspectRatio)
-            self.pixmap_label.setPixmap(pixmap)

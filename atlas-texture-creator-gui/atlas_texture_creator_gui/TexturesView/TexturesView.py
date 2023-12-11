@@ -1,3 +1,6 @@
+import time
+
+from PySide6 import QtCore
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QScrollArea, QGridLayout, QWidget, QHBoxLayout
 
@@ -6,19 +9,28 @@ from .TextureViewImage import TextureViewImage
 from .TextureViewImageInfo import TextureViewImageInfo
 from atlas_texture_creator.atlas_texture import AtlasTexture
 from atlas_texture_creator_gui.handlers import AtlasManagerHandler
+from atlas_texture_creator_gui.components.Layouts import ProgressStackLayout
+from atlas_texture_creator_gui.components.ProgressView.ProgressView import ProgressView
 
 
 class TexturesView(QWidget):
-    def __init__(self, atlas_manager_handler: AtlasManagerHandler, atlas_collection: AtlasCollection = None):
-        super().__init__()
+    def __init__(
+        self,
+        atlas_manager_handler: AtlasManagerHandler,
+        atlas_collection: AtlasCollection = None,
+        parent: QWidget = None
+    ):
+        super().__init__(parent)
         self.atlas_manager_handler = atlas_manager_handler
         self.selected_texture = None
+        self.texture_view_widget = QWidget(parent=self)
+        self.container_layout = container_layout = ProgressStackLayout()
+        container_layout.addWidget(self.texture_view_widget)
         self.layout = layout = QHBoxLayout()
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(layout)
         self.texture_view = texture_view = QScrollArea()
-        self.frame = frame = QWidget()
+        self.frame = frame = QWidget(parent=self)
         self.texture_view_layout = texture_view_layout = QGridLayout()
         texture_view_layout.setSpacing(0)
         frame.setLayout(texture_view_layout)
@@ -31,6 +43,8 @@ class TexturesView(QWidget):
 
         self.tvii = TextureViewImageInfo(self.close_texture_info, self.on_texture_save)
         layout.addWidget(self.tvii)
+        self.texture_view_widget.setLayout(layout)
+        self.setLayout(container_layout)
 
         self.atlas_collection = atlas_collection
         atlas_manager_handler.on_current_collection_changed.connect(self.on_atlas_collection_changed)
@@ -81,10 +95,25 @@ class TexturesView(QWidget):
 
     @Slot(AtlasCollection, list)
     def add_textures(self, _, textures: list[AtlasTexture]):
-        for texture in textures:
-            self.add_texture(texture)
+        start_time = time.time()
 
-    def add_texture(self, texture: AtlasTexture):
+        progress_view = self.container_layout.show_progress_view(
+            label="Loading Textures...",
+            max=len(textures),
+            add_background=True,
+        )
+
+        for texture in textures:
+            self.add_texture(texture, progress_view, len(textures))
+
+        end_time = time.time()
+        print(f"{end_time - start_time} seconds for adding the textures")
+
+    def add_texture(self, texture: AtlasTexture, progress_view: ProgressView, texture_length: int = 0):
+        def _add_texture(tvi, x, y):
+            self.texture_view_layout.addWidget(tvi, x, y)
+            progress_view.step()
+
         x = texture.row
         y = texture.column
 
@@ -93,13 +122,31 @@ class TexturesView(QWidget):
             on_click=self.on_texture_click,
         )
 
-        self.texture_view_layout.addWidget(tvi, x, y)
+        if not self.parent().parent().isVisible() or texture_length < 30:
+            _add_texture(tvi, x, y)
+        else:
+            QtCore.QTimer.singleShot(1000, lambda tvi=tvi, x=x, y=y: _add_texture(tvi, x, y))
 
     def load_textures(self, collection: AtlasCollection):
         self.clear()
 
+        start_time = time.time()
+
+        textures_length = len(collection)
+        if textures_length == 0:
+            return
+
+        progress_view = self.container_layout.show_progress_view(
+            label="Loading Textures...",
+            max=textures_length,
+            add_background=True,
+        )
+
         for texture in collection:
-            self.add_texture(texture)
+            self.add_texture(texture, progress_view, len(collection.textures))
+
+        end_time = time.time()
+        print(f"{end_time - start_time} seconds for loading the textures")
 
     def clear(self):
         self.close_texture_info()

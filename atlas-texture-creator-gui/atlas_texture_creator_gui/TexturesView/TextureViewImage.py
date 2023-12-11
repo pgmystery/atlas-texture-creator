@@ -14,7 +14,7 @@ class TextureViewImage(QFrame):
         self.on_click_callback = on_click
         self.layout = layout = QVBoxLayout(self)
 
-        pixmap = QPixmap(texture.texture_path)
+        pixmap = QPixmap(texture.path)
         self.pixmap = pixmap = pixmap.scaled(32, 32, Qt.KeepAspectRatio)
         self.pixmap_label = pixmap_label = QLabel(self, alignment=Qt.AlignCenter)
         pixmap_label.setPixmap(pixmap)

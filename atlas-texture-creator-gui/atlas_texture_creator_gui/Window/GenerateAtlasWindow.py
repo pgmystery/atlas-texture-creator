@@ -2,7 +2,8 @@ from typing import Callable
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QPushButton, QVBoxLayout, QFileDialog, QDialog, \
     QSpacerItem, QSizePolicy, QLabel, QSpinBox, QCheckBox
 
-from atlas_texture_creator.atlas_collection import GenerateAtlasOptionsSize, GenerateAtlasOptions
+from atlas_texture_creator.atlas_collection import GenerateAtlasOptions
+from atlas_texture_creator.types import GenerateAtlasOptionsSize
 from ..Forms.LabelForm import LabelForm
 
 
