@@ -6,9 +6,6 @@ authors = ["pglaw <philipp.glaw@gmx.de>"]
 readme = "README.md"
 packages = [{include = "atlas_texture_creator"}]
 
-[tool.poetry.scripts]
-tests = "python -m pytest"
-
 [tool.poetry.dependencies]
 python = "^3.12"
 pillow = "^10.1.0"
