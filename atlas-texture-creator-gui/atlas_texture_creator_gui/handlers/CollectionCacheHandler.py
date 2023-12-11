@@ -4,7 +4,13 @@ from pathlib import Path
 
 
 class CollectionCache(Path):
-    def __init__(self, cache_path: Path, collection_name: str):
+    def __init__(self, cache_path_with_collection_name: Path | str):
+        if isinstance(cache_path_with_collection_name, str):
+            cache_path_with_collection_name = Path(cache_path_with_collection_name)
+
+        collection_name = cache_path_with_collection_name.name
+        cache_path = cache_path_with_collection_name.parent
+
         super().__init__(cache_path / collection_name)
 
         self.cache_dir = cache_path
@@ -60,4 +66,4 @@ class CollectionCacheHandler:
         self.cache_dir = Path(cache_dir)
 
     def __call__(self, collection_name: str) -> CollectionCache:
-        return CollectionCache(self.cache_dir, collection_name)
+        return CollectionCache(self.cache_dir / collection_name)
