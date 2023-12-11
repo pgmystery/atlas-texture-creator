@@ -9,7 +9,7 @@ packages = [{include = "atlas_texture_creator_gui"}]
 [tool.poetry.scripts]
 gui = "atlas_texture_creator_gui.main:start"
 build = "build:build"
-designer = "pyside6-designer"
+#designer = "pyside6-designer"
 
 [tool.poetry.dependencies]
 python = "^3.12"
