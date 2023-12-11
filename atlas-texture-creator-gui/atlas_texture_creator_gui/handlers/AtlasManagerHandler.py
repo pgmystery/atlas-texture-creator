@@ -3,14 +3,13 @@ import shutil
 from pathlib import Path
 from typing import overload
 from PySide6.QtCore import Signal, QObject, Slot, QRunnable
-from PySide6.QtWidgets import QInputDialog, QMessageBox, QFileDialog
+from PySide6.QtWidgets import QInputDialog, QMessageBox, QFileDialog, QApplication
 
 from atlas_texture_creator import AtlasManager, AtlasCollection, AtlasTexture, AtlasTextureModel
 from atlas_texture_creator.atlas_collection import AtlasCollectionTextureStore
 from atlas_texture_creator_gui.Window.GenerateAtlasWindow import GenerateAtlasWindow, GenerateAtlasReturnType
 from atlas_texture_creator_gui.components.Window import ProgressDialog
 from atlas_texture_creator_gui.handlers.CollectionCacheHandler import CollectionCacheHandler, CollectionCache
-from atlas_texture_creator_gui.main import AtlasTextureCreatorGUI
 from atlas_texture_creator_gui.utils.image_format import get_supported_image_formats
 
 
@@ -79,7 +78,7 @@ class AtlasManagerHandler(QObject):
     on_collection_deleted = Signal(str)
     on_textures_added = Signal(AtlasCollection, list)
 
-    def __init__(self, app: AtlasTextureCreatorGUI, cache_dir: str):
+    def __init__(self, app: QApplication, cache_dir: str):
         super().__init__(app)
         self.app = app
         self.atlas_manager = AtlasManager()
