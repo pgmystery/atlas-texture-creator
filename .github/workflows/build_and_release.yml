@@ -31,9 +31,9 @@ jobs:
         run: |
           poetry install
 
-      - name: Run pytest
+      - name: Run tests
         run: |
-          pytest
+          poetry run tests
 
   build:
     name: Build Application
