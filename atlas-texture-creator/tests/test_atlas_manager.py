@@ -1,9 +1,7 @@
 import os
 from pathlib import Path
 from typing import Callable
-
-import pydantic
-import pytest
+from pydantic import ValidationError
 from decorator import decorator
 
 from atlas_texture_creator import AtlasManager, AtlasManagerConfig, AtlasCollection, AtlasTexture
@@ -42,8 +40,8 @@ def test_create_collection_from_string(atlas_manager_with_config: AtlasManager):
 def test_create_collection_with_empty_name(atlas_manager_with_config: AtlasManager):
     try:
         atlas_manager_with_config.create_collection("")
-    except pydantic.error_wrappers.ValidationError as exc:
-        assert "value_error.any_str.min_length" == exc.errors()[0]['type']
+    except ValidationError as exc:
+        assert "string_too_short" == exc.errors()[0]['type']
 
 
 def test_create_collection_from_object(atlas_manager_with_config: AtlasManager):
@@ -77,7 +75,7 @@ def test_update_collection(atlas_manager_with_config: AtlasManager):
 
     atlas_collection = atlas_manager_with_config.update_collection(old_collection_name, new_collection)
 
-    assert atlas_collection.dict() == new_collection.dict()
+    assert atlas_collection.model_dump() == new_collection.model_dump()
     assert atlas_collection.name == new_collection_name
 
 

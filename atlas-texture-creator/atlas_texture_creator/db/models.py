@@ -13,7 +13,8 @@ class Collection(AtlasCollection, SQLModel, table=True):
         new_atlas_collection_model = AtlasCollectionModel(**new_atlas_collection.dict())
         new_atlas_collection_model_dict = dict(new_atlas_collection_model)
 
-        for k, v in self.validate(new_atlas_collection_model_dict).dict(exclude_defaults=True).items():
+        # TODO: NOT WORKING!
+        for k, v in self.model_validate(**new_atlas_collection_model_dict).dict(exclude_defaults=True).items():
             setattr(self, k, v)
 
 
