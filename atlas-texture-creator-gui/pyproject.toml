@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "atlas-texture-creator-gui"
-version = "0.3.1"
+version = "0.3.0"
 description = ""
 authors = ["pglaw <philipp.glaw@gmx.de>"]
 readme = "README.md"
