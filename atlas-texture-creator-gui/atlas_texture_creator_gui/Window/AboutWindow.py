@@ -66,8 +66,5 @@ class AboutWindow(QDialog):
         self.setFixedSize(460, 250)
         self.setWindowTitle("About Atlas-Texture-Creator")
 
-        print(icon_label.pos())
-        print(about_text.pos())
-
     def show(self):
         self.exec()
